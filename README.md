@@ -14,3 +14,11 @@ Run tests
 ```
 sudo pytest-3
 ```
+
+## Builds
+
+### Build documentation
+
+```
+pydoc-markdown --render-toc --py3 --verbose > fmods.md
+```
