@@ -8,6 +8,8 @@ setup(
   packages = find_packages(),
   license="MIT",
   author="Sergey Lunkov",
+  package_dir={'': 'src'},
+  packages=[''],
   install_requires=[
     "gitpython",
     "python-dotenv",
