@@ -8,8 +8,8 @@ setup(
   packages = find_packages(),
   license="MIT",
   author="Sergey Lunkov",
-  package_dir={'': 'src'},
-  packages=[''],
+  package_dir={'fmods': 'src'},
+  packages=['fmods'],
   install_requires=[
     "gitpython",
     "python-dotenv",
