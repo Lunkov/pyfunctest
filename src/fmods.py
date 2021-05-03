@@ -12,10 +12,19 @@ from dotenv import dotenv_values
 from pprint import pprint
 
 class FMods(object):
-  ''' class for dynamic load modules '''
+  ''' Class for load and build environment modules for functional tests '''
 
   def __init__ (self, path_modules, path_tmp, verbose):
-    """Initialising object"""
+    """ Initialising object
+    Parameters
+    ----------
+    path_modules : str
+        path to modules settings
+    path_tmp : str
+        path to temporary files
+    verbose : bool
+        verbose output
+    """
     self.verbose = verbose
     self.path_modules = os.path.abspath(path_modules)
     self.path_tmp = path_tmp
@@ -32,7 +41,8 @@ class FMods(object):
       sys.exit(1)
   
   def scan(self):
-    # check subfolders
+    """ Scan subfolders for modules settings (path_modules)
+    """
     if self.verbose:
       print("DBG: scan folder: %s" % self.path_modules)
     lst_dir = os.listdir(self.path_modules)
@@ -52,20 +62,48 @@ class FMods(object):
             print("WRN: Module not found in %s" % full_path)
 
   def print_list(self):
+    """ Output the list of modules
+    """
     for name, _ in self.mod_dict.items():
       print("LOG: mod: %s" % name)
 
   def get_mods_count(self):
+    """ Count of modules
+    """
     return len(self.mod_dict)
 
   def get_mod_config(self, module_name):
+    """ Get configuration of module
+        Parameters
+        ----------
+        module_name : str
+            name of module
+    """
     return self.mod_dict.get(module_name, {})
 
   def get_tmp_folder(self, module_name):
+    """ Get temporary path for module
+        Parameters
+        ----------
+        module_name : str
+            name of the module
+            
+        Returns
+        -------
+        path:
+            temporary path for the module
+    """
     return os.path.join(self.path_tmp, 'git', module_name)
 
   def git_clone(module_name, config):
-    ''' Git Clone '''
+    """ Clone git repository of module
+        Parameters
+        ----------
+        module_name : str
+            name of module
+        config : dictionary
+            configuration of module
+    """
     if not 'GIT_SRC' in config:
       print("LOG: 'GIT_SRC' Not Found (mod='%s')" % module_name)
       return
@@ -77,9 +115,19 @@ class FMods(object):
     repo = git.Repo.clone_from(config['GIT_SRC'], fpath, branch=config['GIT_BRANCH'])
 
   def docker_build(self, module_name, config):
-    ''' Docker Builf '''
+    """ Build docker container of module
+        Parameters
+        ----------
+        module_name : str
+            name of module
+        config : dictionary
+            configuration of module
+    """
     if not 'CONTAINER_NAME' in config:
       print("ERR: 'CONTAINER_NAME' Not Found (mod='%s')" % module_name)
+      return
+    if not 'DOCKERFILE' in config:
+      print("ERR: Docker build: 'DOCKERFILE' Not Found (mod='%s')" % module_name)
       return
 
     fpath = get_tmp_folder(module_name)
@@ -101,6 +149,14 @@ class FMods(object):
       print("FATAL: Docker build container '%s': %s" % (config['CONTAINER_NAME'], str(e)))
 
   def docker_remove(self, container_name):
+    """ Remove docker container of module
+        Parameters
+        ----------
+        module_name : str
+            name of module
+        config : dictionary
+            configuration of module
+    """
     try:
       print("LOG: Docker: Remove '%s' container" % container_name)
       container = client.containers.get(container_name)
@@ -109,7 +165,18 @@ class FMods(object):
       print("LOG: Container '%s' Not Found" % (container_name))
 
   def docker_run(self, module_name, config):
-    ''' load module by name '''
+    """ Run docker container of module
+        Parameters
+        ----------
+        module_name : str
+            name of module
+        config : dictionary
+            configuration of module
+    """
+    if not 'CONTAINER_SRC' in config:
+      print("ERR: Docker Run: 'CONTAINER_SRC' Not Found (mod='%s')" % module_name)
+      return
+    
     fpath = get_tmp_folder(module_name)
     self.docker_remove(config['CONTAINER_NAME'])
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
@@ -121,6 +188,12 @@ class FMods(object):
 
 
   def get_connect_to_postresql(self, module_name):
+    """ Connect to postgresql database
+        Attributes
+        ----------
+        module_name : str
+            name of module
+    """
     cfg = self.get_mod_config(module_name)
     if not 'DB_NAME' in cfg:
       print("LOG: SQL: Module '%s'. DB_NAME Not Found" % (module_name))
@@ -146,12 +219,22 @@ class FMods(object):
                             dbname=cfg['DB_NAME'])
 
   def setUp(self):
+    """ setUp for UTests
+    """
     for module_name, config in self.mod_dict.items():
-      self.git_clone(module_name, config)
-      self.docker_build(module_name, config)
+      if 'GIT_SRC' in config:
+        self.git_clone(module_name, config)
+      self.docker_remove(module_name)
+      if 'DOCKERFILE' in config:
+        self.docker_build(module_name, config)
+      else:
+        if 'CONTAINER_SRC' in config:
+          self.docker_run(module_name, config)
 
 
   def tearDown(self):
+    """ tearDown for UTests
+    """
     shutil.rmtree(self.path_tmp, ignore_errors=True)
     for module_name, config in self.mod_dict.items():
       self.docker_remove(module_name)
