@@ -13,6 +13,5 @@ setup(
     "python-dotenv",
     "docker",
     "psycopg2",
-    "shutil",
   ],
 )
