@@ -24,7 +24,7 @@ sudo apt install python3-pytest
 
 Run tests
 ```
-sudo pytest-3
+sudo pytest-3 -s
 ```
 
 ## Builds
