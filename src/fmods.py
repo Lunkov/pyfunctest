@@ -405,7 +405,7 @@ class FMods(object):
     """
     for moduleName, config in self.modules.items():
       if 'GIT_SRC' in config:
-        self.git_clone(moduleName)
+        self.gitClone(moduleName)
       self.dockerRemove(moduleName)
       if 'DOCKERFILE' in config:
         self.dockerBuild(moduleName)
