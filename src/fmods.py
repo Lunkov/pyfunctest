@@ -406,12 +406,13 @@ class FMods(object):
     for moduleName, config in self.modules.items():
       if 'GIT_SRC' in config:
         self.git_clone(moduleName)
-      self.docker_remove(moduleName)
+      self.dockerRemove(moduleName)
       if 'DOCKERFILE' in config:
-        self.docker_build(moduleName)
+        self.dockerBuild(moduleName)
+        self.dockerRun(moduleName)
       else:
         if 'CONTAINER_SRC' in config:
-          self.docker_run(moduleName)
+          self.dockerRun(moduleName)
 
 
   def stopAll(self):
@@ -419,4 +420,4 @@ class FMods(object):
     """
     shutil.rmtree(self.pathTmp, ignore_errors=True)
     for moduleName, config in self.modules.items():
-      self.docker_remove(moduleName)
+      self.dockerRemove(moduleName)
