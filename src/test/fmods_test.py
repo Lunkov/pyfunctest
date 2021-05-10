@@ -85,14 +85,18 @@ class TestFMods(unittest.TestCase):
     ok = fm.gitClone('srv-report')
     self.assertEqual(ok, True)
     
+    self.assertEqual(True, fm.dockerStatusWaiting('srv-report', 'not found'))
+    
     ok = fm.dockerBuild('srv-report')
     self.assertEqual(ok, True)
-    
+
     ok = fm.dockerRun('srv-report')
     self.assertEqual(ok, True)
     
     res = fm.dockerStatus('srv-report')
     self.assertEqual(res, 'running')
+
+    self.assertEqual(True, fm.dockerStatusWaiting('srv-report', 'running'))
     
     ok = fm.dockerRemove('srv-report')
     self.assertEqual(ok, True)
