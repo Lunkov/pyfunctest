@@ -374,6 +374,8 @@ class FMods(object):
         if self.verbose:
           print("ERR: Docker status container '%s': %s" % (containerName, str(e)))
       continue
+    if container is None:
+      return 'not found' == status
     return container.status == status
 
   def getConnectToPostreSQL(self, moduleName):
