@@ -177,7 +177,7 @@ class FMods(object):
         print("DBG: Docker: Build '%s' container: path=%s" % (containerName, buildpath))
         print("DBG: Docker: Build '%s' container: Dockerfile=%s" % (containerName, dockerfile))
       image, build_logs = self.docker.images.build(path = buildpath, tag=containerName, nocache=True, rm=True, forcerm=True, dockerfile=dockerfile)
-
+      self.modules[moduleName]['CONTAINER_SRC'] = containerName
       if self.verbose:
         for line in build_logs:
           if 'stream' in line:
@@ -359,7 +359,7 @@ class FMods(object):
       time.sleep(stop_time)
       elapsed_time += stop_time
       if self.verbose:
-        print("DBG: WAIT: status='%s' '%s'=container.status * elapsed_time=%d" % (status, container.status, elapsed_time))
+        print("DBG: WAIT: Container '%s': status='%s' != '%s'=container.status * elapsed_time=%d" % (containerName, status, container.status, elapsed_time))
       container = self.docker.containers.get(containerName)
       continue
     return container.status == status
