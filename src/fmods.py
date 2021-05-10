@@ -119,7 +119,7 @@ class FMods(object):
       return False
     fpath = self.getTmpFolder(moduleName)
     shutil.rmtree(fpath, ignore_errors=True)
-    os.makedirs(fpath, exist_ok=True)
+    os.makedirs(self.pathTmp, exist_ok=True)
     if self.verbose:
       print("DBG: git.clone.%s: %s => %s" % (moduleName, config['GIT_SRC'], fpath))
     repo = git.Repo.clone_from(config['GIT_SRC'], fpath, branch=config['GIT_BRANCH'])
