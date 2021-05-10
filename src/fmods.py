@@ -364,7 +364,10 @@ class FMods(object):
       time.sleep(stop_time)
       elapsed_time += stop_time
       if self.verbose:
-        print("DBG: WAIT: Container '%s': status='%s' != '%s'=container.status * elapsed_time=%d" % (containerName, status, container.status, elapsed_time))
+        if container is None:
+          print("DBG: WAIT: Container '%s': status='%s' != 'not found'=container.status * elapsed_time=%d" % (containerName, status, elapsed_time))
+        else:
+          print("DBG: WAIT: Container '%s': status='%s' != '%s'=container.status * elapsed_time=%d" % (containerName, status, container.status, elapsed_time))
       try:
         container = self.docker.containers.get(containerName)
       except Exception as e:
