@@ -57,29 +57,21 @@ class Postgre(object):
       port = self.config['DB_PORT']
 
     try:
-      handle = psycopg2.connect(host=host,
+      self.dbConn = psycopg2.connect(host=host,
                                 port=port,
                                 user=self.config['DB_USER'],
                                 password=self.config['DB_PASSWORD'],
                                 dbname=self.config['DB_NAME'])
-      return handle
+      return self.dbConn
     except Exception as e:
-      print("FATAL: Connect to DB '%s:%s\%s': %s" % (host, port, self.config['DB_NAME'], str(e)))
+      print("FATAL: Connect to DB '%s:%s\\%s': %s" % (host, port, self.config['DB_NAME'], str(e)))
     return None
 
-  def getTableList(dbCursor, schema = 'public'):
+  def getTableList(self, schema = 'public'):
     # Retrieve the table list
-    s = ""
-    s += "SELECT"
-    s += " table_schema"
-    s += ", table_name"
-    s += " FROM information_schema.tables"
-    s += " WHERE"
-    s += " ("
-    s += " table_schema = '" + schema + "'"
-    s += " )"
-    s += " ORDER BY table_schema, table_name;"
+    s = "SELECT table_schema, table_name FROM information_schema.tables WHERE (table_schema = '%s') ORDER BY table_schema, table_name;" % schema
 
+    cursor = self.dbConn.cursor()
     # Retrieve all the rows from the cursor
-    dbCursor.execute(s)
-    return dbCursor.fetchall()
+    cursor.execute(s)
+    return cursor.fetchall()

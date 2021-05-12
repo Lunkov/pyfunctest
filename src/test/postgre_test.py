@@ -3,7 +3,9 @@
 
 import unittest
 import requests
+import time
 from src.fmods import FMods
+from src.docker import Docker
 from src.postgre import Postgre
 
 class TestPostgre(unittest.TestCase):
@@ -18,15 +20,38 @@ class TestPostgre(unittest.TestCase):
     fm.scan()
     self.assertEqual(fm.count(), 5)
 
-    config_need = dict(sorted({('CONTAINER_NAME', 'pg-test'), ('CONTAINER_SRC', 'postgres:alpine'), ('DB_NAME', 'test-db'), ('DB_PASSWORD', 'pwd'), ('DB_USER', 'user'), ('NAME', 'pg'), ('TYPE', 'docker')}))
-    cfg = fm.getConfig('pg')
-    cfg.pop('MOD_PATH', None)
-    self.assertEqual(cfg, config_need)
+    #config_need = dict(sorted({('CONTAINER_NAME', 'pg-test'), ('CONTAINER_SRC', 'postgres:alpine'), ('DB_NAME', 'test-db'), ('DB_PASSWORD', 'pwd'), ('DB_USER', 'user'), ('NAME', 'pg'), ('TYPE', 'docker')}))
+    #cfg = fm.getConfig('pg')
+    #cfg.pop('MOD_PATH', None)
+    #self.assertEqual(cfg, config_need)
     
     pg = Postgre(fm.getConfig('pg'), fm.getTmpFolder('pg'), True)
     
     dbconn = pg.getConnect('pg')
-    self.assertEqual(dbconn, None)
+    self.assertIsNone(dbconn)
+
+    # Start service
+    srvPg = Docker(fm.getConfig('pg'), fm.getTmpFolder('pg'), True)
+
+    ok = srvPg.run()
+    self.assertTrue(ok)
+    res = srvPg.status()
+    self.assertEqual(res, 'running')
+
+    time.sleep(2)
+
+    # Test connect
+    dbconn = pg.getConnect('pg')
+    self.assertIsNotNone(dbconn)
+    tbl = pg.getTableList()
+    self.assertEqual(tbl, [])
+
+    # Remove
+    ok = srvPg.remove()
+    self.assertEqual(ok, True)
+    
+    res = srvPg.status()
+    self.assertEqual(res, 'not found')
 
 
 if __name__ == '__main__':
