@@ -15,7 +15,7 @@ class TestDocker(unittest.TestCase):
     self.assertEqual(fm.count(), 0)
     
     fm.scan()
-    self.assertEqual(fm.count(), 5)
+    self.assertEqual(fm.count(), 7)
 
     srvNginx000 = Docker(fm.getConfig('nginx-000'), fm.getTmpFolder('nginx-000'), True)
 

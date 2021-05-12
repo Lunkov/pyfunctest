@@ -188,6 +188,10 @@ class Docker(object):
       print("ERR: Docker run: Not Found (mod='%s')" % self.moduleName)
       return False
     
+    command = None
+    if 'CONTAINER_RUN_COMMAND' in self.config:
+      command = self.config['CONTAINER_RUN_COMMAND']
+    
     # Parse Ports
     ports = dict()
     if 'CONTAINER_PORTS' in self.config:
@@ -219,7 +223,7 @@ class Docker(object):
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
-      container = self.docker.containers.run(self.config['CONTAINER_SRC'], name=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
+      container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, name=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       self.statusWaiting('running')
 
     except Exception as e:

@@ -14,7 +14,7 @@ class TestGIT(unittest.TestCase):
     self.assertEqual(fm.count(), 0)
     
     fm.scan()
-    self.assertEqual(fm.count(), 5)
+    self.assertEqual(fm.count(), 7)
    
     # Test: Docker build
     srvGit = GIT(fm.getConfig('srv-report'), fm.getTmpFolder('srv-report'), True)

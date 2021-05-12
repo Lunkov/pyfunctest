@@ -14,7 +14,7 @@ from dotenv import dotenv_values
 from pprint import pprint
 
 class Postgre(object):
-  ''' Class for load and build environment modules for functional tests '''
+  ''' Class for work with DB '''
 
   def __init__ (self, config, pathTmp, verbose):
     """ Initialising object
@@ -75,3 +75,8 @@ class Postgre(object):
     # Retrieve all the rows from the cursor
     cursor.execute(s)
     return cursor.fetchall()
+
+  def loadSQL(self, fileName):
+    cursor = self.dbConn.cursor()
+    sqlFile = open(fileName,'r')
+    cursor.execute(sqlFile.read())

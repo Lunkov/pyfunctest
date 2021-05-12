@@ -16,7 +16,7 @@ class TestFMods(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('pg'), 'data/tmp/git/pg')
     
     fm.scan()
-    self.assertEqual(fm.count(), 5)
+    self.assertEqual(fm.count(), 7)
 
 if __name__ == '__main__':
   unittest.main()
