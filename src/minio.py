@@ -66,7 +66,12 @@ class MinIO(object):
     return None
 
   def getBasketsList(self):
-    return self.handle.list_buckets()
+    bs = self.handle.list_buckets()
+    res = []
+    for b in bs:
+      res.append(b.name)
+    res.sort()
+    return res
 
   def uploadFile(self, bucket, filename, fullPath):
     try:
@@ -99,6 +104,6 @@ class MinIO(object):
       result = filecmp.cmp(file1, filePath, shallow=False)
       os.remove(file1)
     except Exception as e:
-      print("FATAL: downloadFile to Minio(%s): %s" % (self.connect, str(e)))
+      print("FATAL: compareFiles Minio(%s): %s" % (self.connect, str(e)))
       return False
     return result

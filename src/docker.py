@@ -197,8 +197,18 @@ class Docker(object):
     if 'CONTAINER_PORTS' in self.config:
       for item in self.config['CONTAINER_PORTS'].split(','):
         it = item.split(':')
-        ports[it[1]] = it[0]
-    
+        if len(it) == 2:
+          ip = it[1].split('-')
+          if len(ip) == 1:
+            ports[it[1]] = it[0]
+          else:
+            # Range of ports. Example: 1000-1010:2000-2010
+            p = 0
+            ip2 = it[0].split('-')
+            for i in range(int(ip[0]), int(ip[1])):
+              ports[i] = int(ip2[0]) + p
+              p += 1
+
     # Parse Env
     env_const = 'CONTAINER_ENV_'
     envs = dict()

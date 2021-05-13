@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import unittest
 import requests
 import time
@@ -56,6 +57,9 @@ class TestMINIO(unittest.TestCase):
     self.assertFalse(minio.compareFiles('bucket-test1', 'test.txt', 'data/files/test2.txt'))
     self.assertFalse(minio.compareFiles('bucket-test', 'test.txt', 'data/files/test1.txt'))
     self.assertFalse(minio.compareFiles('bucket-test', 'test1.txt', 'data/files/test.txt'))
+
+    tbl = minio.getBasketsList()
+    self.assertEqual(tbl, ['bucket-test'])
 
     # Remove
     ok = srvMINIO.remove()
