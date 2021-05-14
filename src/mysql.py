@@ -61,7 +61,8 @@ class MySQL(object):
                                     port=self.port,
                                     user=self.config['DB_USER'],
                                     passwd=self.config['DB_PASSWORD'],
-                                    db=self.config['DB_NAME'])
+                                    db=self.config['DB_NAME'],
+                                    database=self.config['DB_NAME'])
       return self.dbConn
     except Exception as e:
       print("FATAL: Connect to DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
@@ -69,12 +70,16 @@ class MySQL(object):
 
   def getTableList(self):
     # Retrieve the table list
-    s = "SHOW TABLES"
+    s = "SHOW TABLES;"
     try:
       cursor = self.dbConn.cursor()
       # Retrieve all the rows from the cursor
       cursor.execute(s)
-      return cursor.fetchall()
+      res = []
+      for b in cursor.fetchall():
+        res.append(b[0])
+      res.sort()
+      return res      
     except Exception as e:
       print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
     return []
@@ -88,3 +93,14 @@ class MySQL(object):
     except Exception as e:
       print("FATAL: loadSQL DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
     return False
+
+  def getData(self, sql):
+    # Retrieve the table list
+    try:
+      cursor = self.dbConn.cursor()
+      # Retrieve all the rows from the cursor
+      cursor.execute(sql)
+      return cursor.fetchall()
+    except Exception as e:
+      print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+    return []

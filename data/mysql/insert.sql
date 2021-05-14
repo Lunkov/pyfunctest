@@ -1,0 +1,1 @@
+INSERT INTO article (article_name, article_desc) VALUES('article 1', 'description');
