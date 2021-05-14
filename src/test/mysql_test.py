@@ -46,6 +46,11 @@ class TestMySql(unittest.TestCase):
     tbl = msql.getTableList()
     self.assertEqual(tbl, [])
 
+    self.assertTrue(msql.loadSQL('data/mysq/create_table.sql'))
+
+    tbl = msql.getTableList()
+    self.assertEqual(tbl, [])
+
     # Remove
     ok = srvMySQL.remove()
     self.assertEqual(ok, True)

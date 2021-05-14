@@ -45,6 +45,23 @@ class TestPostgre(unittest.TestCase):
     self.assertIsNotNone(dbconn)
     tbl = pg.getTableList()
     self.assertEqual(tbl, [])
+    
+    self.assertTrue(pg.loadSQL('data/postgre/create_table.sql'))
+    
+    tbl = pg.getTableList()
+    self.assertEqual(tbl, [('public', 'article')])
+
+    self.assertTrue(pg.loadSQL('data/postgre/create_tables.sql'))
+    
+    tbl = pg.getTableList()
+    self.assertEqual(tbl, [('public', 'article'), ('public', 'article2'), ('public', 'article3')])
+    
+    res = pg.getData('select * from public.article')
+    self.assertEqual(res, [])
+    
+    self.assertTrue(pg.loadSQL('data/postgre/insert.sql'))
+    res = pg.getData('select * from public.article')
+    self.assertEqual(res, [(1, 'article 1', 'description', None)])
 
     # Remove
     ok = srvPg.remove()

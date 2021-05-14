@@ -49,34 +49,42 @@ class MySQL(object):
       print("LOG: SQL: Module '%s'. DB_PASSWORD Not Found" % (self.moduleName))
       return None
 
-    host = '127.0.0.1'
+    self.host = '127.0.0.1'
     if 'DB_HOST' in self.config:
-      host = self.config['DB_HOST']
-    port = 3306
+      self.host = self.config['DB_HOST']
+    self.port = 3306
     if 'DB_PORT' in self.config:
-      port = int(self.config['DB_PORT'])
+      self.port = int(self.config['DB_PORT'])
 
     try:
-      self.dbConn = MySQLdb.connect(host=host,
-                                    port=port,
+      self.dbConn = MySQLdb.connect(host=self.host,
+                                    port=self.port,
                                     user=self.config['DB_USER'],
                                     passwd=self.config['DB_PASSWORD'],
                                     db=self.config['DB_NAME'])
       return self.dbConn
     except Exception as e:
-      print("FATAL: Connect to DB '%s:%s\\%s': %s" % (host, port, self.config['DB_NAME'], str(e)))
+      print("FATAL: Connect to DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
     return None
 
   def getTableList(self):
     # Retrieve the table list
     s = "SHOW TABLES"
-
-    cursor = self.dbConn.cursor()
-    # Retrieve all the rows from the cursor
-    cursor.execute(s)
-    return cursor.fetchall()
+    try:
+      cursor = self.dbConn.cursor()
+      # Retrieve all the rows from the cursor
+      cursor.execute(s)
+      return cursor.fetchall()
+    except Exception as e:
+      print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+    return []
 
   def loadSQL(self, fileName):
-    cursor = self.dbConn.cursor()
-    sqlFile = open(fileName,'r')
-    cursor.execute(sqlFile.read())
+    try:
+      cursor = self.dbConn.cursor()
+      sqlFile = open(fileName,'r')
+      cursor.execute(sqlFile.read())
+      return True
+    except Exception as e:
+      print("FATAL: loadSQL DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+    return False
