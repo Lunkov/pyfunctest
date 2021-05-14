@@ -10,6 +10,7 @@ import shutil
 import docker
 import traceback
 import ftplib
+import filecmp
 from dotenv import dotenv_values
 from pprint import pprint
 
@@ -39,25 +40,32 @@ class FTP():
         moduleName : str
             name of module
     """
-    host = 'localhost'
+    self.host = 'localhost'
     if 'FTP_HOST' in self.config:
-      host = self.config['FTP_HOST']
-    port = '21'
+      self.host = self.config['FTP_HOST']
+    self.port = '21'
     if 'FTP_PORT' in self.config:
-      port = self.config['FTP_PORT']
-    self.connect = "%s:%s" % (host, port)
+      self.port = self.config['FTP_PORT']
+    self.port = int(self.port)
+    self.connect = "%s:%d" % (self.host, self.port)
 
-    user = ''
+    self.user = ''
     if 'FTP_USER' in self.config:
-      user = self.config['FTP_USER']
-    password = ''
+      self.user = self.config['FTP_USER']
+    self.password = ''
     if 'FTP_PASSWORD' in self.config:
-      password = self.config['FTP_PASSWORD']
-
+      self.password = self.config['FTP_PASSWORD']
+      
+    self.handle = None
+    return self.reconnect()
+    
+  def reconnect(self):
     try:
+      if not self.handle is None:
+        self.handle.close()
       self.handle = ftplib.FTP()
-      self.handle.connect(host, int(port))
-      self.handle.login(user, password)
+      self.handle.connect(self.host, self.port, timeout=30)
+      self.handle.login(self.user, self.password)
       self.handle.set_pasv(True)
       return self.handle
     except Exception as e:
@@ -65,6 +73,7 @@ class FTP():
     return None
 
   def getDirList(self):
+    self.reconnect()
     return self.handle.nlst()
 
   def cdTree(self, currentDir):
@@ -79,6 +88,7 @@ class FTP():
         print("DBG: 2 currentDir(%s): %s" % (currentDir, str(e)))
 
   def uploadFile(self, pathFTP, filename, fullPath):
+    self.reconnect()
     try:
       self.handle.cwd('/')
       self.cdTree(pathFTP)
@@ -91,6 +101,7 @@ class FTP():
     return True
 
   def downloadFile(self, pathFTP, filename, fullPath):
+    self.reconnect()
     try:
       self.handle.cwd('/')
       self.cdTree(pathFTP)
@@ -104,6 +115,7 @@ class FTP():
     result = False
     if not os.path.exists(filePath):
       return result
+    self.reconnect()
     try:
       pathTmp = os.path.join(self.pathTmp, pathFTP)
       os.makedirs(pathTmp, exist_ok=True)

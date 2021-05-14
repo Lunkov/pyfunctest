@@ -4,6 +4,7 @@
 import unittest
 import requests
 import time
+import os
 from src.fmods import FMods
 from src.docker import Docker
 from src.ftp import FTP
