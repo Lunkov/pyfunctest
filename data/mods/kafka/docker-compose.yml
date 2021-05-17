@@ -1,0 +1,23 @@
+version: '2'
+services:
+  zookeeper-test:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+  kafka-test:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    depends_on:
+      - zookeeper-test      
+    links: 
+      - zookeeper-test
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2181
+      KAFKA_CREATE_TOPICS: "channel-test:1:1"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LISTENERS: INSIDE://kafka-test:9092,OUTSIDE://kafka-test:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka-test:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE

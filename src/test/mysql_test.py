@@ -5,8 +5,6 @@ import unittest
 import requests
 import time
 from src.fmods import FMods
-from src.docker import Docker
-from src.mysql import MySQL
 
 class TestMySql(unittest.TestCase):
 
@@ -18,30 +16,30 @@ class TestMySql(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('mysql'), 'data/tmp/git/mysql')
 
     fm.scan()
-    self.assertEqual(fm.count(), 7)
+    self.assertTrue(fm.count() > 7)
 
     #config_need = dict(sorted({('CONTAINER_NAME', 'mysql-test'), ('CONTAINER_ENV_MYSQL_DATABASE', 'test-db'), ('CONTAINER_ENV_MYSQL_PASSWORD', 'pwd'), ('CONTAINER_ENV_MYSQL_ROOT_PASSWORD', 'pwd'), ('CONTAINER_ENV_MYSQL_USER', 'user'), ('CONTAINER_PORTS', '17436:3306'), ('CONTAINER_SRC', 'mysql'), ('DB_NAME', 'test-db'), ('DB_PASSWORD', 'pwd'), ('DB_USER', 'root'), ('NAME', 'mysql'), ('TYPE', 'docker'), ('DB_PORT', '17436')}))
     #cfg = fm.getConfig('mysql')
     #cfg.pop('MOD_PATH', None)
     #self.assertEqual(cfg, config_need)
     
-    msql = MySQL(fm.getConfig('mysql'), fm.getTmpFolder('mysql'), True)
+    msql = fm.newMySQL('mysql')
     
-    dbconn = msql.getConnect('mysql')
+    dbconn = msql.getConnect()
     self.assertIsNone(dbconn)
 
     # Start service
-    srvMySQL = Docker(fm.getConfig('mysql'), fm.getTmpFolder('mysql'), True)
+    srvMySQL = fm.newDocker('mysql')
 
     ok = srvMySQL.run()
     self.assertTrue(ok)
     res = srvMySQL.status()
     self.assertEqual(res, 'running')
 
-    time.sleep(15)
+    time.sleep(2)
 
     # Test connect
-    dbconn = msql.getConnect('mysql')
+    dbconn = msql.getConnect()
     self.assertIsNotNone(dbconn)
     tbl = msql.getTableList()
     self.assertEqual(tbl, [])

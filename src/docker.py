@@ -5,13 +5,9 @@
 import os
 import sys
 import time
-import git
-import shutil
+import subprocess
 import docker
-import psycopg2
 import traceback
-from dotenv import dotenv_values
-from pprint import pprint
 
 class Docker(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -43,7 +39,8 @@ class Docker(object):
       print("FATAL: Docker Not Found")
       sys.exit(1)
     if not 'CONTAINER_NAME' in self.config:
-      print("ERR: getDocker: 'CONTAINER_NAME' Not Found (mod='%s')" % self.moduleName)
+      print("ERR: getDocker: 'CONTAINER_NAME' Not Found (mod='%s')" %
+             self.moduleName)
     else:
       self.containerName = self.config['CONTAINER_NAME']
 
@@ -280,3 +277,26 @@ class Docker(object):
       return 'not found' == status
     return container.status == status
 
+  def startCompose(self, fileName):
+    try:
+      if self.verbose:
+        print("DBG: Starting Docker-Compose '%s'" % (fileName))
+      res = subprocess.call(["docker-compose --file %s up --force-recreate --detach" % fileName], shell=True, timeout=60)
+      if self.verbose:
+        print("DBG: Started Docker-Compose '%s': %s" % (fileName, res))
+    except Exception as e:
+      print("FATAL: Start Docker-Compose '%s': %s" % (fileName, str(e)))
+      return False
+    return True
+
+  def stopCompose(self, fileName):
+    try:
+      if self.verbose:
+        print("DBG: Stopping Docker-Compose '%s'" % (fileName))
+      res = subprocess.call(["docker-compose --file %s down" % fileName], shell=True, timeout=60)
+      if self.verbose:
+        print("DBG: Stoped Docker-Compose '%s': %s" % (fileName, res))
+    except Exception as e:
+      print("FATAL: Stop Docker-Compose '%s': %s" % (fileName, str(e)))
+      return False
+    return True

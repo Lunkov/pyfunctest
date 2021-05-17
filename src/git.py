@@ -7,11 +7,7 @@ import sys
 import time
 import git
 import shutil
-import docker
-import psycopg2
 import traceback
-from dotenv import dotenv_values
-from pprint import pprint
 
 class GIT(object):
   ''' Class for load and build environment modules for functional tests '''

@@ -4,8 +4,6 @@
 import unittest
 import requests
 from src.fmods import FMods
-from src.docker import Docker
-from src.git import GIT
 
 class TestDocker(unittest.TestCase):
 
@@ -15,9 +13,9 @@ class TestDocker(unittest.TestCase):
     self.assertEqual(fm.count(), 0)
     
     fm.scan()
-    self.assertEqual(fm.count(), 7)
+    self.assertTrue(fm.count() > 7)
 
-    srvNginx000 = Docker(fm.getConfig('nginx-000'), fm.getTmpFolder('nginx-000'), True)
+    srvNginx000 = fm.newDocker('nginx-000')
 
     # 
     res, ok = srvNginx000.logs()
@@ -33,9 +31,9 @@ class TestDocker(unittest.TestCase):
     self.assertEqual(fm.count(), 0)
     
     fm.scan()
-    self.assertEqual(fm.count(), 5)
+    self.assertTrue(fm.count() > 5)
 
-    srvNginx = Docker(fm.getConfig('nginx'), fm.getTmpFolder('nginx'), True)
+    srvNginx = fm.newDocker('nginx')
 
     srvNginx.stop()
     srvNginx.remove()
@@ -44,14 +42,12 @@ class TestDocker(unittest.TestCase):
     self.assertEqual(res, 'not found')
     
     res, ok = srvNginx.logs()
-    self.assertEqual(ok, False)
+    self.assertFalse(ok)
     self.assertEqual(res, '')
 
     # Test: Docker run
-    ok = srvNginx.run()
-    self.assertEqual(ok, True)
-    res = srvNginx.status()
-    self.assertEqual(res, 'running')
+    self.assertTrue(srvNginx.run())
+    self.assertEqual(srvNginx.status(), 'running')
     
     try:
       r = requests.get('http://127.0.0.1:3010')
@@ -59,18 +55,13 @@ class TestDocker(unittest.TestCase):
     except Exception as e:
       print("FATAL: http://127.0.0.1:3010: %s" % (str(e)))
 
-    res = srvNginx.status()
-    self.assertEqual(res, 'running')
-
-    ok = srvNginx.remove()
-    self.assertEqual(ok, True)
-    
-    res = srvNginx.status()
-    self.assertEqual(res, 'not found')
+    self.assertEqual(srvNginx.status(), 'running')
+    self.assertTrue(srvNginx.remove())
+    self.assertEqual(srvNginx.status(), 'not found')
     
     try:
       r = requests.get('http://127.0.0.1:3010')
-      self.assertEqual(r.status_code, None)
+      self.assertIsNone(r.status_code)
     except Exception as e:
       print("FATAL: http://127.0.0.1:3010: %s" % (str(e)))
 
@@ -80,33 +71,22 @@ class TestDocker(unittest.TestCase):
     self.assertEqual(fm.count(), 0)
     
     fm.scan()
-    self.assertEqual(fm.count(), 5)
+    self.assertTrue(fm.count() > 5)
    
     # Test: Docker build
-    srvGit = GIT(fm.getConfig('srv-report'), fm.getTmpFolder('srv-report'), True)
-    srvDocker = Docker(fm.getConfig('srv-report'), fm.getTmpFolder('srv-report'), True)
+    srvGit = fm.newGIT('srv-report')
+    srvDocker = fm.newDocker('srv-report')
     
-    ok = srvGit.clone()
-    self.assertEqual(ok, True)
-    
-    self.assertEqual(True, srvDocker.statusWaiting('not found'))
-    
-    ok = srvDocker.build()
-    self.assertEqual(ok, True)
-
-    ok = srvDocker.run()
-    self.assertEqual(ok, True)
+    self.assertTrue(srvGit.clone())
+    self.assertTrue(srvDocker.statusWaiting('not found'))
+    self.assertTrue(srvDocker.build())
+    self.assertTrue(srvDocker.run())
     
     res = srvDocker.status()
     self.assertEqual(res, 'running')
-
-    self.assertEqual(True, srvDocker.statusWaiting('running'))
-    
-    ok = srvDocker.remove()
-    self.assertEqual(ok, True)
-    
-    res = srvDocker.status()
-    self.assertEqual(res, 'not found')
+    self.assertTrue(srvDocker.statusWaiting('running'))
+    self.assertTrue(srvDocker.remove())
+    self.assertEqual(srvDocker.status(), 'not found')
 
 if __name__ == '__main__':
   unittest.main()

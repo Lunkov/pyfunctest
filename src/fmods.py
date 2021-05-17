@@ -5,13 +5,18 @@
 import os
 import sys
 import time
-import git
 import shutil
-import docker
-import psycopg2
 import traceback
+import docker
 from dotenv import dotenv_values
 from pprint import pprint
+from src.docker import Docker
+from src.git import GIT
+from src.ftp import FTP
+from src.postgre import Postgre
+from src.mysql import MySQL
+from src.rabbitmq import RabbitMQ
+from src.kafka import Kafka
 
 class FMods(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -126,3 +131,27 @@ class FMods(object):
     shutil.rmtree(self.pathTmp, ignore_errors=True)
     for moduleName, config in self.modules.items():
       self.dockerRemove(moduleName)
+
+  def newDocker(self, moduleName):
+    return Docker(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newGIT(self, moduleName):
+    return GIT(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newFTP(self, moduleName):
+    return FTP(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newMinIO(self, moduleName):
+    return MinIO(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newMySQL(self, moduleName):
+    return MySQL(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newPostgre(self, moduleName):
+    return Postgre(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newRabbitMQ(self, moduleName):
+    return RabbitMQ(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newKafka(self, moduleName):
+    return Kafka(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)

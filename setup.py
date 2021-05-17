@@ -13,6 +13,13 @@ setup(
     "gitpython",
     "python-dotenv",
     "docker",
+    "docker-compose",
+    "filecmp",
+    "ftplib",
+    "minio",
+    "MySQLdb",
     "psycopg2",
+    "pika",
+    "kafka-python",
   ],
 )

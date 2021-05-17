@@ -5,13 +5,8 @@
 import os
 import sys
 import time
-import git
-import shutil
-import docker
 import psycopg2
 import traceback
-from dotenv import dotenv_values
-from pprint import pprint
 
 class Postgre(object):
   ''' Class for work with DB '''
@@ -32,12 +27,8 @@ class Postgre(object):
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
   
-  def getConnect(self, moduleName):
+  def getConnect(self):
     """ Connect to postgresql database
-        Attributes
-        ----------
-        moduleName : str
-            name of module
     """
     if not 'DB_NAME' in self.config:
       print("LOG: SQL: Module '%s'. DB_NAME Not Found" % (self.moduleName))

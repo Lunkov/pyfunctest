@@ -5,14 +5,8 @@
 import os
 import sys
 import time
-import git
-import shutil
-import docker
 import traceback
-import filecmp
 from minio import Minio
-from dotenv import dotenv_values
-from pprint import pprint
 
 class MinIO(object):
   ''' Class for work with Minio '''
@@ -33,12 +27,8 @@ class MinIO(object):
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
   
-  def getConnect(self, moduleName):
-    """ Connect to postgresql database
-        Attributes
-        ----------
-        moduleName : str
-            name of module
+  def getConnect(self):
+    """ Connect to minio
     """
     host = 'localhost'
     if 'S3_HOST' in self.config:

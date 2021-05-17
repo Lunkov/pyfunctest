@@ -6,8 +6,6 @@ import unittest
 import requests
 import time
 from src.fmods import FMods
-from src.docker import Docker
-from src.minio import MinIO
 
 class TestMINIO(unittest.TestCase):
 
@@ -19,33 +17,31 @@ class TestMINIO(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('minio'), 'data/tmp/git/minio')
 
     fm.scan()
-    self.assertEqual(fm.count(), 7)
+    self.assertTrue(fm.count() > 7)
 
     #config_need = dict(sorted({('CONTAINER_NAME', 'minio-test'), ('CONTAINER_ENV_S3_ACCESS_KEY', 'user'), ('CONTAINER_ENV_S3_SECRET_KEY', 'pwd'), ('CONTAINER_PORTS', '3010:9000'), ('CONTAINER_SRC', 'minio/minio'), ('S3_ACCESS_KEY', 'user'), ('S3_SECRET_KEY', 'pwd'), ('NAME', 'minio'), ('TYPE', 'docker'), ('S3_PORT', '3010')}))
     #cfg = fm.getConfig('minio')
     #cfg.pop('MOD_PATH', None)
     #self.assertEqual(cfg, config_need)
     
-    minio = MinIO(fm.getConfig('minio'), fm.getTmpFolder('minio'), True)
+    minio = fm.newMinIO('minio')
     
-    conn = minio.getConnect('minio')
+    conn = minio.getConnect()
     self.assertIsNone(conn)
 
     # Start service
-    srvMINIO = Docker(fm.getConfig('minio'), fm.getTmpFolder('minio'), True)
+    srvMINIO = fm.newDocker('minio')
 
-    ok = srvMINIO.run()
-    self.assertTrue(ok)
-    res = srvMINIO.status()
-    self.assertEqual(res, 'running')
+    self.assertTrue(srvMINIO.run())
+    self.assertEqual(srvMINIO.status(), 'running')
 
     time.sleep(5)
 
     # Test connect
-    conn = minio.getConnect('minio')
+    conn = minio.getConnect()
     self.assertIsNotNone(conn)
-    tbl = minio.getBasketsList()
-    self.assertEqual(tbl, [])
+
+    self.assertEqual(minio.getBasketsList(), [])
     
     self.assertTrue(minio.uploadFile('bucket-test', 'test.txt', 'data/files/test.txt'))
 
@@ -58,15 +54,11 @@ class TestMINIO(unittest.TestCase):
     self.assertFalse(minio.compareFiles('bucket-test', 'test.txt', 'data/files/test1.txt'))
     self.assertFalse(minio.compareFiles('bucket-test', 'test1.txt', 'data/files/test.txt'))
 
-    tbl = minio.getBasketsList()
-    self.assertEqual(tbl, ['bucket-test'])
+    self.assertEqual(minio.getBasketsList(), ['bucket-test'])
 
     # Remove
-    ok = srvMINIO.remove()
-    self.assertEqual(ok, True)
-    
-    res = srvMINIO.status()
-    self.assertEqual(res, 'not found')
+    self.assertTrue(srvMINIO.remove())
+    self.assertEqual(srvMINIO.status(), 'not found')
 
 
 if __name__ == '__main__':

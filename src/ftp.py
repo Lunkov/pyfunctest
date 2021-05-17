@@ -5,14 +5,9 @@
 import os
 import sys
 import time
-import git
-import shutil
-import docker
 import traceback
 import ftplib
 import filecmp
-from dotenv import dotenv_values
-from pprint import pprint
 
 class FTP():
   ''' Class for work with FTP '''
@@ -33,12 +28,8 @@ class FTP():
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
   
-  def getConnect(self, moduleName):
-    """ Connect to postgresql database
-        Attributes
-        ----------
-        moduleName : str
-            name of module
+  def getConnect(self):
+    """ Connect to FTP
     """
     self.host = 'localhost'
     if 'FTP_HOST' in self.config:
