@@ -14,7 +14,6 @@ setup(
     "python-dotenv",
     "docker",
     "docker-compose",
-    "ftplib",
     "minio",
     "MySQLdb",
     "psycopg2",
