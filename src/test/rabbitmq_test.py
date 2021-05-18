@@ -5,6 +5,7 @@ import os
 import unittest
 import requests
 import time
+import pika
 from src.fmods import FMods
 
 class TestRabbitMQ(unittest.TestCase):
@@ -25,42 +26,43 @@ class TestRabbitMQ(unittest.TestCase):
     #self.assertIsNone(conn)
 
     # Start service
-    #srvRabbitMQ = fm.newDocker('rabbitmq')
+    srvRabbitMQ = fm.newDocker('rabbitmq')
 
-    #self.assertTrue(srvRabbitMQ.run())
-    #self.assertEqual(srvRabbitMQ.status(), 'running')
+    self.assertTrue(srvRabbitMQ.run())
+    self.assertTrue(srvRabbitMQ.statusWaiting('running'))
+    self.assertEqual(srvRabbitMQ.status(), 'running')
 
     time.sleep(5)
 
     # Test connect
-    conn = rabbitmq1.getConnect()
-    self.assertIsNotNone(conn)
+    queue = 'log3'
+    exchange = 'log3'
+    routing_key = ''
+    exchange_type = 'fanout'
     
-    channel = 'channel-test'
-    exchange = 'exchange-test'
-    key = 'key-test'
-
-    self.assertTrue(rabbitmq1.send(channel, exchange, key, 'message 1'))
-    self.assertTrue(rabbitmq1.send(channel, exchange, key, 'message 2'))
-    self.assertTrue(rabbitmq1.send(channel, exchange, key, 'message 3'))
-    self.assertTrue(rabbitmq1.send(channel, exchange, key, 'message 4'))
-    self.assertTrue(rabbitmq1.send(channel, exchange, key, 'message 5'))
+    self.assertTrue(rabbitmq1.createRoute(exchange, exchange_type, routing_key, queue))
+    
+    self.assertTrue(rabbitmq1.send(exchange, routing_key, 'message 1'))
+    self.assertTrue(rabbitmq1.send(exchange, routing_key, 'message 2'))
 
     rabbitmq2 = fm.newRabbitMQ('rabbitmq')
-    conn = rabbitmq2.getConnect()
-    self.assertIsNotNone(conn)
     
-    time.sleep(25)
+    time.sleep(1)
     
-    msg, ok = rabbitmq2.receive(channel, key)
+    msg, ok = rabbitmq2.receive(queue)
     self.assertTrue(ok)
-    self.assertEqual(msg, 'message')
+    self.assertEqual(msg, 'message 1')
+
+    msg, ok = rabbitmq2.receive(queue)
+    self.assertTrue(ok)
+    self.assertEqual(msg, 'message 2')
 
     rabbitmq1.close()
     rabbitmq2.close()
+
     # Remove
-    #self.assertTrue(srvRabbitMQ.remove())
-    #self.assertEqual(srvRabbitMQ.status(), 'not found')
+    self.assertTrue(srvRabbitMQ.remove())
+    self.assertEqual(srvRabbitMQ.status(), 'not found')
 
 
 if __name__ == '__main__':
