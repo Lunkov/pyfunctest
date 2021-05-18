@@ -15,7 +15,7 @@ setup(
     "docker",
     "docker-compose",
     "minio",
-    "MySQLdb",
+    "mysqlclient",
     "psycopg2",
     "pika",
     "kafka-python",
