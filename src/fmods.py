@@ -10,13 +10,13 @@ import traceback
 import docker
 from dotenv import dotenv_values
 from pprint import pprint
-from src.docker import Docker
-from src.git import GIT
-from src.ftp import FTP
-from src.postgre import Postgre
-from src.mysql import MySQL
-from src.rabbitmq import RabbitMQ
-from src.kafka import Kafka
+from .docker import Docker
+from .git import GIT
+from .ftp import FTP
+from .postgre import Postgre
+from .mysql import MySQL
+from .rabbitmq import RabbitMQ
+from .kafka import Kafka
 
 class FMods(object):
   ''' Class for load and build environment modules for functional tests '''
