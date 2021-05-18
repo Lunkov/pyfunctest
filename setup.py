@@ -14,7 +14,7 @@ setup(
     "python-dotenv",
     "docker",
     "docker-compose",
-    "filecmp",
+    "pycopy-filecmp",
     "ftplib",
     "minio",
     "MySQLdb",
