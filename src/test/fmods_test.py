@@ -16,6 +16,7 @@ class TestFMods(unittest.TestCase):
     
     fm.scan()
     self.assertTrue(fm.count() > 7)
+    fm.printList()
 
 if __name__ == '__main__':
   unittest.main()

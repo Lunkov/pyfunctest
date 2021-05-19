@@ -70,6 +70,10 @@ class FMods(object):
             print("DBG: find mod: %s" % config['NAME'])
           name = config['NAME']
           config['MOD_PATH'] = fullPath
+          if not 'ORDER' in config:
+            config['ORDER'] = 0
+          else:
+            config['ORDER'] = int(config['ORDER'])
           self.modules[name] = set()
           self.modules[name] = dict(sorted(config.items()))
         else:
@@ -79,8 +83,8 @@ class FMods(object):
   def printList(self):
     """ Output the list of modules
     """
-    for name, _ in self.modules.items():
-      print("LOG: mod: %s" % name)
+    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
+      print("LOG: mod: %s \t (order=%d)" % (s[1]['NAME'], s[1]['ORDER']))
 
   def count(self):
     """ Count of modules
@@ -113,24 +117,23 @@ class FMods(object):
   def startAll(self):
     """ setUp for UTests
     """
-    for moduleName, config in self.modules.items():
-      if 'GIT_SRC' in config:
-        self.gitClone(moduleName)
-      self.dockerRemove(moduleName)
-      if 'DOCKERFILE' in config:
-        self.dockerBuild(moduleName)
-        self.dockerRun(moduleName)
-      else:
-        if 'CONTAINER_SRC' in config:
-          self.dockerRun(moduleName)
+    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
+      moduleName = s[1]['NAME']
+      config = s[1]
+      if 'CONTAINER_SRC' in config:
+        srv = self.newDocker(moduleName)
+        srv.run()
 
 
   def stopAll(self):
     """ tearDown for UTests
     """
     shutil.rmtree(self.pathTmp, ignore_errors=True)
-    for moduleName, config in self.modules.items():
-      self.dockerRemove(moduleName)
+    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER'], reverse=True):
+      moduleName = s[1]['NAME']
+      config = s[1]
+      srv = self.newDocker(moduleName)
+      srv.remove()
 
   def newDocker(self, moduleName):
     return Docker(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)

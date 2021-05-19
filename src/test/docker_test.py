@@ -88,5 +88,16 @@ class TestDocker(unittest.TestCase):
     self.assertTrue(srvDocker.remove())
     self.assertEqual(srvDocker.status(), 'not found')
 
+  def testDockerBigRun(self):
+    fm = FMods("data/mods/", "data/tmp/", True)
+		
+    self.assertEqual(fm.count(), 0)
+    
+    fm.scan()
+    self.assertTrue(fm.count() > 5)
+    fm.startAll()
+    
+    fm.stopAll()
+    
 if __name__ == '__main__':
   unittest.main()
