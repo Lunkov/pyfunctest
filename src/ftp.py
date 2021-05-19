@@ -27,10 +27,6 @@ class FTP():
     self.config = config
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
-  
-  def getConnect(self):
-    """ Connect to FTP
-    """
     self.host = 'localhost'
     if 'FTP_HOST' in self.config:
       self.host = self.config['FTP_HOST']
@@ -46,22 +42,29 @@ class FTP():
     self.password = ''
     if 'FTP_PASSWORD' in self.config:
       self.password = self.config['FTP_PASSWORD']
-      
     self.handle = None
+  
+  def getConnect(self):
+    """ Connect to FTP
+    """
     return self.reconnect()
     
   def reconnect(self):
+    self.close()
     try:
-      if not self.handle is None:
-        self.handle.close()
       self.handle = ftplib.FTP()
       self.handle.connect(self.host, self.port, timeout=30)
       self.handle.login(self.user, self.password)
       self.handle.set_pasv(True)
       return self.handle
     except Exception as e:
-      print("FATAL: Connect to FTP '%s': %s" % (self.connect, str(e)))
+      print("FATAL: Connect to FTP '%s': %s" % (self.handle, str(e)))
     return None
+    
+  def close(self):
+    if not self.handle is None:
+      self.handle.close()
+    self.handle = None
 
   def getDirList(self):
     self.reconnect()
