@@ -120,9 +120,21 @@ class FMods(object):
     for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
       moduleName = s[1]['NAME']
       config = s[1]
+      if 'GIT_SRC' in config:
+        gt = self.newGIT(moduleName)
+        gt.clone()
+      if 'DOCKERFILE' in config:
+        srv = self.newDocker(moduleName)
+        srv.build(False)
+        srv.run(False)
+        srv.statusWaiting('running')
       if 'CONTAINER_SRC' in config:
         srv = self.newDocker(moduleName)
         srv.run()
+        srv.statusWaiting('running')
+      if 'CONTAINER_COMPOSE' in config:
+        srv = self.newDocker(moduleName)
+        srv.startCompose('')
 
 
   def stopAll(self):
@@ -132,8 +144,12 @@ class FMods(object):
     for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER'], reverse=True):
       moduleName = s[1]['NAME']
       config = s[1]
-      srv = self.newDocker(moduleName)
-      srv.remove()
+      if 'CONTAINER_SRC' in config:
+        srv = self.newDocker(moduleName)
+        srv.remove()
+      if 'CONTAINER_COMPOSE' in config:
+        srv = self.newDocker(moduleName)
+        srv.stopCompose('')
 
   def newDocker(self, moduleName):
     return Docker(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)

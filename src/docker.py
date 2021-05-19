@@ -53,7 +53,7 @@ class Docker(object):
     """
     return ('CONTAINER_NAME' in self.config)
 
-  def build(self):
+  def build(self, rm=True):
     """ Build docker container of module
         Parameters
         ----------
@@ -71,8 +71,9 @@ class Docker(object):
     dockerfile = os.path.join(fpath, self.config['DOCKERFILE'])
     buildpath = os.path.join(fpath, self.config['DOCKER_BUILDPATH'])
 
-    self.stop()
-    self.remove()
+    if rm:
+      self.stop()
+      self.remove()
 
     try:
       print("LOG: Docker: Build '%s' container..." % self.containerName)
@@ -174,7 +175,7 @@ class Docker(object):
       print("WRN: Docker: Container '%s' Not Found" % (self.containerName))
     return '', False
 
-  def run(self):
+  def run(self, rm = True):
     """ Run docker container of module
         Parameters
         ----------
@@ -226,7 +227,8 @@ class Docker(object):
         else:
           volumes[p] = {'bind': it[1]}
 
-    self.remove()
+    if rm:
+      self.remove()
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
@@ -277,7 +279,16 @@ class Docker(object):
       return 'not found' == status
     return container.status == status
 
+  def getNameDockerCompose(self, fileName):
+    if len(fileName) < 1:
+      dcf = 'docker-compose.yml'
+      if 'CONTAINER_COMPOSE' in self.config:
+        dcf = self.config['CONTAINER_COMPOSE']
+      fileName = os.path.join(self.config['MOD_PATH'], dcf)
+    return fileName
+    
   def startCompose(self, fileName):
+    fileName = self.getNameDockerCompose(fileName)
     try:
       if self.verbose:
         print("DBG: Starting Docker-Compose '%s'" % (fileName))
@@ -290,6 +301,7 @@ class Docker(object):
     return True
 
   def stopCompose(self, fileName):
+    fileName = self.getNameDockerCompose(fileName)
     try:
       if self.verbose:
         print("DBG: Stopping Docker-Compose '%s'" % (fileName))
