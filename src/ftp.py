@@ -34,7 +34,6 @@ class FTP():
     if 'FTP_PORT' in self.config:
       self.port = self.config['FTP_PORT']
     self.port = int(self.port)
-    self.connect = "%s:%d" % (self.host, self.port)
 
     self.user = ''
     if 'FTP_USER' in self.config:
@@ -42,6 +41,9 @@ class FTP():
     self.password = ''
     if 'FTP_PASSWORD' in self.config:
       self.password = self.config['FTP_PASSWORD']
+
+    self.url = "ftp://%s@%s:%d" % (self.user, self.host, self.port)
+
     self.handle = None
   
   def getConnect(self):
@@ -51,36 +53,126 @@ class FTP():
     
   def reconnect(self):
     self.close()
-    try:
-      self.handle = ftplib.FTP()
-      self.handle.connect(self.host, self.port, timeout=30)
-      self.handle.login(self.user, self.password)
-      self.handle.set_pasv(True)
-      return self.handle
-    except Exception as e:
-      print("FATAL: Connect to FTP '%s': %s" % (self.handle, str(e)))
-    return None
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
+    while (self.handle is None) and elapsed_time < timeout:
+      time.sleep(stop_time)
+      elapsed_time += stop_time
+      try:
+        self.handle = ftplib.FTP()
+        self.handle.connect(self.host, self.port, timeout=30)
+        self.handle.login(self.user, self.password)
+        self.handle.set_pasv(True)
+          
+      except Exception as e:
+        if self.verbose:
+          print("DBG: WAIT: %d: Connect to FTP '%s':%s" % (elapsed_time, self.url, str(e)))
+        str_err = str(e)
+
+    if self.handle is None:
+      print("FATAL: Connect to FTP '%s': %s" % (self.url, str_err))
+      return None    
+    
+    if self.verbose:
+      print("DBG: Connected to FTP '%s': %s" % (self.url, self.handle.getwelcome()))
+    return self.handle
     
   def close(self):
     if not self.handle is None:
       self.handle.close()
     self.handle = None
 
-  def getDirList(self):
+  def getDirList(self, currentDir):
+    res = []
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
     self.reconnect()
-    return self.handle.nlst()
+    while (self.handle is None) and elapsed_time < timeout:
+      time.sleep(stop_time)
+      elapsed_time += stop_time
+      try:
+        res = self.handle.nlst(currentDir)
+      except Exception as e:
+        if self.verbose:
+          print("DBG: WAIT: %d: Connect to FTP '%s':%s" % (elapsed_time, self.url, str(e)))
+        str_err = str(e)
+        
+    if len(str_err) > 0:
+      print("ERR: getDirList(%s/%s): %s" % (self.url, currentDir, str_err))
+      return res
 
-  def cdTree(self, currentDir):
+    res.sort()
+    
+    return res
+
+  def getFileList(self, currentDir):
+    self.reconnect()
+    res = []
+    res = []
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
+    while (self.handle is None) and elapsed_time < timeout:
+      time.sleep(stop_time)
+      elapsed_time += stop_time
+      try:
+        res = self.handle.nlst(currentDir)
+      except Exception as e:
+        if self.verbose:
+          print("DBG: WAIT: %d: Connect to FTP '%s':%s" % (elapsed_time, self.url, str(e)))
+        str_err = str(e)
+        
+    if len(str_err) > 0:
+      print("ERR: getFileList(%s/%s): %s" % (self.url, currentDir, str_err))
+      return res
+
+    res.sort()
+    
+    return res
+
+  def cd(self, currentDir):
+    self.reconnect()
+    self.handle.cwd('/')
+    if currentDir != '':
+      self.cdTree(currentDir, False)
+      try:
+        self.handle.cwd(currentDir)
+      except Exception as e:
+        print("ERR: Change Directory(%s/%s): %s" % (self.url, currentDir, str(e)))
+    return self.handle.pwd() == currentDir
+
+  def mkDir(self, currentDir):
+    self.reconnect()
+    self.handle.cwd('/')
+    if currentDir != '':
+      self.cdTree(currentDir)
+      try:
+        self.handle.cwd(currentDir)
+      except Exception as e:
+        print("ERR: Change Directory(%s/%s): %s" % (self.url, currentDir, str(e)))
+    res = self.handle.pwd() == currentDir
+    self.handle.cwd('/')
+    return res
+
+  def cdTree(self, currentDir, mk = True):
     if currentDir != '':
       try:
         self.handle.cwd(currentDir)
-        print("DBG: 1 currentDir(%s)" % (currentDir))
       except Exception as e:
-        self.cdTree("/".join(currentDir.split("/")[:-1]))
-        self.handle.mkd(currentDir)
-        self.handle.cwd(currentDir)
-        print("DBG: 2 currentDir(%s): %s" % (currentDir, str(e)))
-
+        if self.verbose:
+          print("DBG: Change Subdirectory(%s/%s): %s" % (self.url, currentDir, str(e)))
+        self.cdTree("/".join(currentDir.split("/")[:-1]), mk)
+        try:
+          if mk:
+            self.handle.mkd(currentDir)
+        except Exception as e:
+          print("ERR: Make Subdirectory(%s/%s): %s" % (self.url, currentDir, str(e)))
+  
   def uploadFile(self, pathFTP, filename, fullPath):
     self.reconnect()
     try:
@@ -90,7 +182,7 @@ class FTP():
       self.handle.storbinary(f'STOR {filename}', fileh)
       fileh.close()
     except Exception as e:
-      print("FATAL: uploadFile to FTP(%s): %s" % (self.connect, str(e)))
+      print("FATAL: uploadFile to FTP(%s): %s" % (self.url, str(e)))
       return False
     return True
 
@@ -101,7 +193,7 @@ class FTP():
       self.cdTree(pathFTP)
       self.handle.retrbinary("RETR " + filename, open(fullPath, 'wb').write)
     except Exception as e:
-      print("FATAL: downloadFile to FTP(%s): %s" % (self.connect, str(e)))
+      print("FATAL: downloadFile to FTP(%s): %s" % (self.url, str(e)))
       return False
     return True
 
@@ -109,17 +201,21 @@ class FTP():
     result = False
     if not os.path.exists(filePath):
       return result
-    self.reconnect()
     try:
       pathTmp = os.path.join(self.pathTmp, pathFTP)
       os.makedirs(pathTmp, exist_ok=True)
       file1 = os.path.join(pathTmp, filename)
+    except Exception as e:
+      print("FATAL: compareFiles Local(%s): %s" % (self.url, str(e)))
+      return False
+    self.reconnect()
+    try:
       self.handle.cwd('/')
       self.cdTree(pathFTP)
       self.handle.retrbinary("RETR " + filename, open(file1, 'wb').write)
       result = filecmp.cmp(file1, filePath, shallow=False)
       os.remove(file1)
     except Exception as e:
-      print("FATAL: compareFiles FTP(%s): %s" % (self.connect, str(e)))
+      print("FATAL: compareFiles FTP(%s): %s" % (self.url, str(e)))
       return False
     return result

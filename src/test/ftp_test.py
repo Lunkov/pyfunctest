@@ -19,34 +19,29 @@ class TestFTP(unittest.TestCase):
     fm.scan()
     self.assertTrue(fm.count() > 7)
 
-    #config_need = dict(sorted({('CONTAINER_NAME', 'ftp-test'), ('CONTAINER_ENV_FTP_PASSWORD', 'pwd'), ('CONTAINER_ENV_FTP_USER', 'user'), ('CONTAINER_PORTS', '3021:21'), ('CONTAINER_SRC', 'teezily/ftpd'), ('FTP_PASSWORD', 'pwd'), ('FTP_USER', 'user'), ('NAME', 'ftp'), ('TYPE', 'docker'), ('FTP_PORT', '3021')}))
-    #cfg = fm.getConfig('ftp')
-    #cfg.pop('MOD_PATH', None)
-    #self.assertEqual(cfg, config_need)
-    
-    ftp = fm.newFTP('ftp')
-    
-    conn = ftp.getConnect()
-    self.assertIsNone(conn)
-
     # Start service
     srvFTP = fm.newDocker('ftp')
 
     self.assertTrue(srvFTP.run())
     self.assertEqual(srvFTP.status(), 'running')
 
-    time.sleep(5)
-
-    # Test connect
-    conn = ftp.getConnect()
+    ftp = fm.newFTP('ftp')
+    
+    conn = ftp.reconnect()
     self.assertIsNotNone(conn)
 
-    self.assertEqual(ftp.getDirList(), ['incoming'])
+    self.assertEqual(ftp.getDirList('/'), ['incoming'])
+    self.assertEqual(ftp.getFileList('/'), ['incoming'])
+    self.assertFalse(ftp.cd('incoming'))
+    self.assertFalse(ftp.cd('incoming2'))
+    self.assertTrue(ftp.mkDir('/folder-test/folder-test2'))
 
-    self.assertTrue(ftp.uploadFile('folder-test', 'test.txt', 'data/files/test.txt'))
-
-    self.assertTrue(ftp.downloadFile('folder-test', 'test.txt', 'data/files/test2.txt'))
-    self.assertTrue(ftp.compareFiles('folder-test', 'test.txt', 'data/files/test2.txt'))
+    self.assertEqual(ftp.getFileList('/folder-test'), ['/folder-test/folder-test2'])
+    self.assertTrue(ftp.uploadFile('/folder-test', 'test.txt', 'data/files/test.txt'))
+    self.assertEqual(ftp.getFileList('/folder-test'), ['/folder-test/folder-test2', '/folder-test/test.txt'])
+    
+    self.assertTrue(ftp.downloadFile('/folder-test', 'test.txt', 'data/files/test2.txt'))
+    self.assertTrue(ftp.compareFiles('/folder-test', 'test.txt', 'data/files/test2.txt'))
     os.remove('data/files/test2.txt')
 
     self.assertTrue(ftp.compareFiles('folder-test', 'test.txt', 'data/files/test.txt'))
