@@ -30,18 +30,18 @@ class TestFTP(unittest.TestCase):
     conn = ftp.reconnect()
     self.assertIsNotNone(conn)
 
-    self.assertEqual(ftp.getDirList('/'), ['incoming'])
-    self.assertEqual(ftp.getFileList('/'), ['incoming'])
+    self.assertEqual(ftp.getDirList(''), ['incoming'])
+    self.assertEqual(ftp.getFileList(''), ['incoming'])
     self.assertFalse(ftp.cd('incoming'))
     self.assertFalse(ftp.cd('incoming2'))
     self.assertTrue(ftp.mkDir('/folder-test/folder-test2'))
 
     self.assertEqual(ftp.getFileList('/folder-test'), ['/folder-test/folder-test2'])
-    self.assertTrue(ftp.uploadFile('/folder-test', 'test.txt', 'data/files/test.txt'))
+    self.assertTrue(ftp.uploadFile('folder-test', 'test.txt', 'data/files/test.txt'))
     self.assertEqual(ftp.getFileList('/folder-test'), ['/folder-test/folder-test2', '/folder-test/test.txt'])
     
-    self.assertTrue(ftp.downloadFile('/folder-test', 'test.txt', 'data/files/test2.txt'))
-    self.assertTrue(ftp.compareFiles('/folder-test', 'test.txt', 'data/files/test2.txt'))
+    self.assertTrue(ftp.downloadFile('folder-test', 'test.txt', 'data/files/test2.txt'))
+    self.assertTrue(ftp.compareFiles('folder-test', 'test.txt', 'data/files/test2.txt'))
     os.remove('data/files/test2.txt')
 
     self.assertTrue(ftp.compareFiles('folder-test', 'test.txt', 'data/files/test.txt'))
@@ -49,7 +49,7 @@ class TestFTP(unittest.TestCase):
     self.assertFalse(ftp.compareFiles('folder-test', 'test.txt', 'data/files/test1.txt'))
     self.assertFalse(ftp.compareFiles('folder-test', 'test1.txt', 'data/files/test.txt'))
 
-    self.assertEqual(ftp.getDirList(), ['folder-test', 'incoming'])
+    self.assertEqual(ftp.getDirList(''), ['folder-test', 'incoming'])
     
     
     # Remove

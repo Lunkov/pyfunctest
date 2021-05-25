@@ -8,6 +8,20 @@ import time
 import traceback
 import ftplib
 import filecmp
+import socket
+
+class CustomFTP(ftplib.FTP):
+
+  def makepasv(self):
+    if self.af == socket.AF_INET:
+      host, port = ftplib.parse227(self.sendcmd('PASV'))
+    else:
+      host, port = ftplib.parse229(self.sendcmd('EPSV'), self.sock.getpeername())
+
+    if '0.0.0.0' == host:
+      """ this ip will be unroutable, we copy Filezilla and return the host instead """
+      host = self.host
+    return host, port
 
 class FTP():
   ''' Class for work with FTP '''
@@ -61,7 +75,7 @@ class FTP():
       time.sleep(stop_time)
       elapsed_time += stop_time
       try:
-        self.handle = ftplib.FTP()
+        self.handle = CustomFTP()
         self.handle.connect(self.host, self.port, timeout=30)
         self.handle.login(self.user, self.password)
         self.handle.set_pasv(True)
@@ -90,12 +104,19 @@ class FTP():
     stop_time = 1
     elapsed_time = 0
     str_err = ''
-    self.reconnect()
-    while (self.handle is None) and elapsed_time < timeout:
-      time.sleep(stop_time)
+    
+    while elapsed_time < timeout:
+      if elapsed_time > 0:
+        time.sleep(stop_time)
       elapsed_time += stop_time
+      self.reconnect()
       try:
         res = self.handle.nlst(currentDir)
+        elapsed_time += timeout
+      except ftplib.error_perm as e:
+        if self.verbose:
+          print("DBG: WAIT: %d: Connect to FTP '%s':%s" % (elapsed_time, self.url, str(e)))
+        str_err = str(e)
       except Exception as e:
         if self.verbose:
           print("DBG: WAIT: %d: Connect to FTP '%s':%s" % (elapsed_time, self.url, str(e)))
@@ -107,21 +128,24 @@ class FTP():
 
     res.sort()
     
+    if self.verbose:
+      print("DBG: Directory list FTP '%s:%s': %s" % (self.url, currentDir, str(res)))
     return res
 
   def getFileList(self, currentDir):
-    self.reconnect()
-    res = []
     res = []
     timeout = 15
     stop_time = 1
     elapsed_time = 0
     str_err = ''
-    while (self.handle is None) and elapsed_time < timeout:
-      time.sleep(stop_time)
+    while elapsed_time < timeout:
+      if elapsed_time > 0:
+        time.sleep(stop_time)
       elapsed_time += stop_time
+      self.reconnect()
       try:
         res = self.handle.nlst(currentDir)
+        elapsed_time += timeout
       except Exception as e:
         if self.verbose:
           print("DBG: WAIT: %d: Connect to FTP '%s':%s" % (elapsed_time, self.url, str(e)))
@@ -132,6 +156,8 @@ class FTP():
       return res
 
     res.sort()
+    if self.verbose:
+      print("DBG: File list FTP '%s:%s': %s" % (self.url, currentDir, str(res)))
     
     return res
 
@@ -200,6 +226,7 @@ class FTP():
   def compareFiles(self, pathFTP, filename, filePath):
     result = False
     if not os.path.exists(filePath):
+      print("ERR: compareFiles FTP(%s): Local File not found: %s" % (self.url, filePath))
       return result
     try:
       pathTmp = os.path.join(self.pathTmp, pathFTP)
