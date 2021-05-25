@@ -232,7 +232,7 @@ class Docker(object):
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
-      container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, name=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
+      container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       self.statusWaiting('running')
 
     except Exception as e:
