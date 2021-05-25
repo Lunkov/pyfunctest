@@ -26,10 +26,12 @@ class Docker(object):
     self.verbose = verbose
     self.config = config
     self.pathTmp = pathTmp
-    if 'CONTAINER_NAME' in self.config:
+    self.moduleName = 'undefined'
+    if 'NAME' in self.config:
       self.moduleName = self.config['NAME']
-    else:
-      self.moduleName = 'undefined'
+    self.networkName = 'test-net'
+    if 'CONTAINER_NETWORK' in self.config:
+      self.networkName = self.config['CONTAINER_NETWORK']
     try:
       self.docker = docker.from_env()
       info = self.docker.version()
@@ -38,6 +40,7 @@ class Docker(object):
     except:
       print("FATAL: Docker Not Found")
       sys.exit(1)
+
     if not 'CONTAINER_NAME' in self.config:
       print("ERR: getDocker: 'CONTAINER_NAME' Not Found (mod='%s')" %
              self.moduleName)
@@ -232,7 +235,7 @@ class Docker(object):
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
-      container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
+      container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, network=self.networkName, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       self.statusWaiting('running')
 
     except Exception as e:
