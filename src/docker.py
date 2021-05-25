@@ -32,6 +32,7 @@ class Docker(object):
     self.networkName = 'test-net'
     if 'CONTAINER_NETWORK' in self.config:
       self.networkName = self.config['CONTAINER_NETWORK']
+    
     try:
       self.docker = docker.from_env()
       info = self.docker.version()
@@ -41,6 +42,14 @@ class Docker(object):
       print("FATAL: Docker Not Found")
       sys.exit(1)
 
+    net = None
+    try:
+      net = self.docker.networks.get(self.networkName)
+    except:
+      print("ERR: Docker network(%s) Not Found" % self.networkName)
+    if net is None:
+      self.docker.networks.create(self.networkName, driver="bridge")
+    
     if not 'CONTAINER_NAME' in self.config:
       print("ERR: getDocker: 'CONTAINER_NAME' Not Found (mod='%s')" %
              self.moduleName)
@@ -235,6 +244,7 @@ class Docker(object):
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
+      # container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, network_mode='bridge', name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, network=self.networkName, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       self.statusWaiting('running')
 

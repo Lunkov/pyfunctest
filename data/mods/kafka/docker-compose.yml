@@ -2,6 +2,8 @@ version: '2'
 services:
   zookeeper-test:
     image: wurstmeister/zookeeper
+    networks:
+      - test-net
     ports:
       - "2181:2181"
   kafka-test:
@@ -13,6 +15,8 @@ services:
       - zookeeper-test      
     links: 
       - zookeeper-test
+    networks:
+      - test-net
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2181
       KAFKA_CREATE_TOPICS: "channel-test:1:1"
