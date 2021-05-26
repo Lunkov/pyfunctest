@@ -28,30 +28,29 @@ class MinIO(object):
     self.config = config
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
-  
+    self.host = 'localhost'
+    if 'S3_HOST' in self.config:
+      self.host = self.config['S3_HOST']
+    self.port = '9000'
+    if 'S3_PORT' in self.config:
+      self.port = self.config['S3_PORT']
+    self.connect = "%s:%s" % (self.host, self.port)
+
+    self.access_key = ''
+    if 'S3_ACCESS_KEY' in self.config:
+      self.access_key = self.config['S3_ACCESS_KEY']
+    self.secret_key = ''
+    if 'S3_SECRET_KEY' in self.config:
+      self.secret_key = self.config['S3_SECRET_KEY']
+      
+
   def getConnect(self):
     """ Connect to minio
     """
-    host = 'localhost'
-    if 'S3_HOST' in self.config:
-      host = self.config['S3_HOST']
-    port = '9000'
-    if 'S3_PORT' in self.config:
-      port = self.config['S3_PORT']
-    self.connect = "%s:%s" % (host, port)
-
-    access_key = ''
-    if 'S3_ACCESS_KEY' in self.config:
-      access_key = self.config['S3_ACCESS_KEY']
-    secret_key = ''
-    if 'S3_SECRET_KEY' in self.config:
-      secret_key = self.config['S3_SECRET_KEY']
 
     try:
-      self.handle = Minio(self.connect, access_key=access_key,
-                                secret_key=secret_key, secure=False)
-                                
-      self.handle.list_buckets()
+      self.handle = Minio(self.connect, access_key=self.access_key,
+                                secret_key=self.secret_key, secure=False)
       return self.handle
     except Exception as e:
       print("FATAL: Connect to Minio(%s): %s" % (self.connect, str(e)))
