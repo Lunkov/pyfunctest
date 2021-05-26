@@ -13,6 +13,7 @@ from pprint import pprint
 from .docker import Docker
 from .git import GIT
 from .ftp import FTP
+from .minio import MinIO
 from .postgre import Postgre
 from .mysql import MySQL
 from .rabbitmq import RabbitMQ

@@ -3,9 +3,11 @@
 ''' Class for work with testing Modules '''
 
 import os
+import io
 import sys
 import time
 import traceback
+import filecmp
 from minio import Minio
 
 class MinIO(object):
@@ -63,34 +65,59 @@ class MinIO(object):
     res.sort()
     return res
 
-  def uploadFile(self, bucket, filename, fullPath):
+  def uploadFile(self, bucketName, filename, fullPath):
     try:
-      found = self.handle.bucket_exists(bucket)
+      found = self.handle.bucket_exists(bucketName)
       if not found:
-          self.handle.make_bucket(bucket)
-      self.handle.fput_object(bucket, filename, fullPath)
+          self.handle.make_bucket(bucketName)
+      self.handle.fput_object(bucketName, filename, fullPath)
     except Exception as e:
       print("FATAL: uploadFile to Minio(%s): %s" % (self.connect, str(e)))
       return False
     return True
 
-  def downloadFile(self, bucket, filename, fullPath):
+  def mkDir(self, bucketName, fullPath):
     try:
-      self.handle.fget_object(bucket, filename, fullPath)
+      found = self.handle.bucket_exists(bucketName)
+      if not found:
+          self.handle.make_bucket(bucketName)
+      self.handle.put_object(bucketName, fullPath, io.BytesIO(b''), 0, content_type='application/x-directory')
+    except Exception as e:
+      print("FATAL: Make folder '%s' into Minio(%s): %s" % (fullPath, self.connect, str(e)))
+      return False
+    return True
+    
+  def getListObjects(self, bucketName, currentDir):
+    res = []
+    objects = []
+    try:
+      found = self.handle.bucket_exists(bucketName)
+      if not found:
+          self.handle.make_bucket(bucketName)
+      objects = self.handle.list_objects(bucketName, prefix=currentDir, recursive=True)
+    except Exception as e:
+      print("FATAL: List folder '%s' into Minio(%s): %s" % (currentDir, self.connect, str(e)))
+    for obj in objects:
+      res.append(obj.object_name)
+    return res
+
+  def downloadFile(self, bucketName, filename, fullPath):
+    try:
+      self.handle.fget_object(bucketName, filename, fullPath)
     except Exception as e:
       print("FATAL: downloadFile to Minio(%s): %s" % (self.connect, str(e)))
       return False
     return True
 
-  def compareFiles(self, bucket, filename, filePath):
+  def compareFiles(self, bucketName, filename, filePath):
     result = False
     if not os.path.exists(filePath):
       return result
     try:
-      pathTmp = os.path.join(self.pathTmp, bucket)
+      pathTmp = os.path.join(self.pathTmp, bucketName)
       os.makedirs(pathTmp, exist_ok=True)
       file1 = os.path.join(pathTmp, filename)
-      self.handle.fget_object(bucket, filename, file1)
+      self.handle.fget_object(bucketName, filename, file1)
       result = filecmp.cmp(file1, filePath, shallow=False)
       os.remove(file1)
     except Exception as e:
