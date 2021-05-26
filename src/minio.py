@@ -28,6 +28,7 @@ class MinIO(object):
     self.config = config
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
+    self.handle = None
     self.host = 'localhost'
     if 'S3_HOST' in self.config:
       self.host = self.config['S3_HOST']
@@ -35,7 +36,6 @@ class MinIO(object):
     if 'S3_PORT' in self.config:
       self.port = self.config['S3_PORT']
     self.connect = "%s:%s" % (self.host, self.port)
-
     self.access_key = ''
     if 'S3_ACCESS_KEY' in self.config:
       self.access_key = self.config['S3_ACCESS_KEY']
