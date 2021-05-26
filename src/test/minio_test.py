@@ -26,8 +26,8 @@ class TestMINIO(unittest.TestCase):
     
     minio = fm.newMinIO('minio')
     
-    conn = minio.getConnect()
-    self.assertIsNone(conn)
+    #conn = minio.reconnect()
+    #self.assertIsNone(conn)
 
     # Start service
     srvMINIO = fm.newDocker('minio')
@@ -35,10 +35,8 @@ class TestMINIO(unittest.TestCase):
     self.assertTrue(srvMINIO.run())
     self.assertEqual(srvMINIO.status(), 'running')
 
-    time.sleep(5)
-
     # Test connect
-    conn = minio.getConnect()
+    conn = minio.reconnect()
     self.assertIsNotNone(conn)
 
     self.assertEqual(minio.getBasketsList(), [])
