@@ -25,7 +25,7 @@ class TestMySql(unittest.TestCase):
     
     msql = fm.newMySQL('mysql')
     
-    dbconn = msql.getConnect()
+    dbconn = msql.reconnect()
     self.assertIsNone(dbconn)
 
     # Start service
@@ -39,7 +39,7 @@ class TestMySql(unittest.TestCase):
     time.sleep(2)
 
     # Test connect
-    dbconn = msql.getConnect()
+    dbconn = msql.reconnect()
     self.assertIsNotNone(dbconn)
     tbl = msql.getTableList()
     self.assertEqual(tbl, [])

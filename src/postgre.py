@@ -90,7 +90,7 @@ class Postgre(object):
       cursor.execute(s)
       return cursor.fetchall()
     except Exception as e:
-      print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+      print("FATAL: getTableList DB '%s': %s" % (self.url, str(e)))
     return []
 
   def loadSQL(self, fileName):
@@ -100,7 +100,7 @@ class Postgre(object):
       cursor.execute(sqlFile.read())
       return True
     except Exception as e:
-      print("FATAL: loadSQL DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+      print("FATAL: loadSQL DB '%s': %s" % (self.url, str(e)))
     return False
 
   def getData(self, sql, schema = 'public'):
@@ -111,5 +111,5 @@ class Postgre(object):
       cursor.execute(sql)
       return cursor.fetchall()
     except Exception as e:
-      print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+      print("FATAL: getTableList DB '%s': %s" % (self.url, str(e)))
     return []
