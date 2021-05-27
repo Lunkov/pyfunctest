@@ -1,4 +1,7 @@
 version: '2'
+networks:
+  test-net:
+    external: true
 services:
   zookeeper-test:
     image: wurstmeister/zookeeper

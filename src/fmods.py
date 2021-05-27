@@ -135,7 +135,7 @@ class FMods(object):
         srv.statusWaiting('running')
       if 'CONTAINER_COMPOSE' in config:
         srv = self.newDocker(moduleName)
-        srv.startCompose('')
+        srv.startCompose()
 
 
   def stopAll(self):
@@ -150,7 +150,7 @@ class FMods(object):
         srv.remove()
       if 'CONTAINER_COMPOSE' in config:
         srv = self.newDocker(moduleName)
-        srv.stopCompose('')
+        srv.stopCompose()
 
   def newDocker(self, moduleName):
     return Docker(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)

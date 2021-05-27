@@ -292,7 +292,7 @@ class Docker(object):
       return 'not found' == status
     return container.status == status
 
-  def getNameDockerCompose(self, fileName):
+  def getNameDockerCompose(self, fileName = ''):
     if len(fileName) < 1:
       dcf = 'docker-compose.yml'
       if 'CONTAINER_COMPOSE' in self.config:
@@ -300,28 +300,27 @@ class Docker(object):
       fileName = os.path.join(self.config['MOD_PATH'], dcf)
     return fileName
     
-  def startCompose(self, fileName):
-    fileName = self.getNameDockerCompose(fileName)
+  def runProcess(self, action, cmd, fileName):
     try:
       if self.verbose:
-        print("DBG: Starting Docker-Compose '%s'" % (fileName))
-      res = subprocess.call(["docker-compose --file %s up --force-recreate --detach" % fileName], shell=True, timeout=60)
-      if self.verbose:
-        print("DBG: Started Docker-Compose '%s': %s" % (fileName, res))
-    except Exception as e:
-      print("FATAL: Start Docker-Compose '%s': %s" % (fileName, str(e)))
-      return False
-    return True
+        print("DBG: %sing Docker-Compose '%s'" % (action, fileName))
+      popen = subprocess.Popen("docker-compose --file %s up --force-recreate --detach" % fileName, shell=True, universal_newlines=True)
 
-  def stopCompose(self, fileName):
-    fileName = self.getNameDockerCompose(fileName)
-    try:
+      output, error = popen.communicate(timeout=60)
       if self.verbose:
-        print("DBG: Stopping Docker-Compose '%s'" % (fileName))
-      res = subprocess.call(["docker-compose --file %s down" % fileName], shell=True, timeout=60)
-      if self.verbose:
-        print("DBG: Stoped Docker-Compose '%s': %s" % (fileName, res))
-    except Exception as e:
-      print("FATAL: Stop Docker-Compose '%s': %s" % (fileName, str(e)))
+        print("DBG: %sed Docker-Compose '%s'" % (action, fileName))
+    except subprocess.CalledProcessError as e:
+      print("FATAL: %s Docker-Compose '%s': %s" % (action, fileName, e.output))
       return False
-    return True
+    except Exception as e:
+      print("FATAL: %s Docker-Compose '%s': %s" % (action, fileName, str(e)))
+      return False
+    return popen.returncode == 0
+
+  def startCompose(self, fileName = ''):
+    fileName = self.getNameDockerCompose(fileName)
+    return self.runProcess("Start", "docker-compose --file %s up --force-recreate --detach" % fileName, fileName)
+
+  def stopCompose(self, fileName = ''):
+    fileName = self.getNameDockerCompose(fileName)
+    return self.runProcess("Stop", "docker-compose --file %s down" % fileName, fileName)

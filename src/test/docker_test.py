@@ -88,6 +88,22 @@ class TestDocker(unittest.TestCase):
     self.assertTrue(srvDocker.remove())
     self.assertEqual(srvDocker.status(), 'not found')
 
+  def testDockerCompose(self):
+    fm = FMods("data/mods/", "data/tmp/", True)
+		
+    self.assertEqual(fm.count(), 0)
+    
+    fm.scan()
+    self.assertTrue(fm.count() > 5)
+    
+    srvDocker = fm.newDocker('kafka') # Docker Compose
+    
+    self.assertTrue(srvDocker.startCompose())
+    self.assertTrue(srvDocker.stopCompose())
+
+    self.assertFalse(srvDocker.startCompose('d1.yaml'))
+    self.assertFalse(srvDocker.stopCompose('d1.yaml'))
+
   def testDockerBigRun(self):
     fm = FMods("data/mods/", "data/tmp/", True)
 		
