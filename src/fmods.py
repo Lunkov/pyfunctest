@@ -18,6 +18,8 @@ from .postgre import Postgre
 from .mysql import MySQL
 from .rabbitmq import RabbitMQ
 from .kafka import Kafka
+from .http import HTTP
+from .httpserver import HTTPSrv
 
 class FMods(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -175,3 +177,9 @@ class FMods(object):
 
   def newKafka(self, moduleName):
     return Kafka(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newHTTP(self, moduleName):
+    return HTTP(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newHTTPServer(self, moduleName):
+    return HTTPSrv(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
