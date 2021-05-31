@@ -6,6 +6,7 @@ import os
 import sys
 import docker
 import git
+import shutil
 
 class Migrate(object):
   ''' Class for load and build environment modules for functional tests '''
