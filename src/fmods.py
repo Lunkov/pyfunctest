@@ -13,6 +13,7 @@ from .ftp import FTP
 from .minio import MinIO
 from .postgre import Postgre
 from .mysql import MySQL
+from .migrate import Migrate
 from .rabbitmq import RabbitMQ
 from .kafka import Kafka
 from .http import HTTP
