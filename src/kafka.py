@@ -5,11 +5,6 @@
 import os
 import sys
 import time
-import git
-import shutil
-import docker
-import traceback
-import pika
 import filecmp
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
@@ -65,7 +60,7 @@ class Kafka():
         print("DBG: WAIT: %d: Connect KafkaProducer '%s':%s" % (elapsed_time, self.url_in, str_err))
 
     if self.producer is None:
-      print("FATAL: KafkaProducer '%s': %s" % (self.url_in, str(e)))
+      print("FATAL: KafkaProducer '%s': %s" % (self.url_in, str_err))
       return None
     
     elapsed_time = 0
@@ -81,7 +76,7 @@ class Kafka():
         print("DBG: WAIT: %d: Connect KafkaConsumer '%s':%s" % (elapsed_time, self.url_out, str_err))
 
     if self.consumer is None:
-      print("FATAL: KafkaConsumer '%s': %s" % (self.url_out, str(e)))
+      print("FATAL: KafkaConsumer '%s': %s" % (self.url_out, str_err))
       return None
 
     return self.consumer

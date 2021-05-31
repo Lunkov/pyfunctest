@@ -6,10 +6,7 @@ import os
 import sys
 import time
 import shutil
-import traceback
-import docker
 from dotenv import dotenv_values
-from pprint import pprint
 from .docker import Docker
 from .git import GIT
 from .ftp import FTP
@@ -42,14 +39,6 @@ class FMods(object):
     if self.pathTmp == "":
       self.pathTmp = os.path.join(os.getcwd(), 'tmp')
     self.modules = dict()
-    try:
-      self.docker = docker.from_env()
-      info = self.docker.version()
-      if self.verbose:
-        print("DBG: docker.version %s" % (info['Components'][0]['Version']))
-    except:
-      print("FATAL: Docker Not Found")
-      sys.exit(1)
   
   def scan(self):
     """ Scan subfolders for modules settings (path_modules)
@@ -138,6 +127,9 @@ class FMods(object):
       if 'CONTAINER_COMPOSE' in config:
         srv = self.newDocker(moduleName)
         srv.startCompose()
+      if 'MIGRATE_COMMAND' in config:
+        migrate = self.newMigrate(moduleName)
+        migrate.run()
 
 
   def stopAll(self):
@@ -171,6 +163,9 @@ class FMods(object):
 
   def newPostgre(self, moduleName):
     return Postgre(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
+
+  def newMigrate(self, moduleName):
+    return Migrate(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)
 
   def newRabbitMQ(self, moduleName):
     return RabbitMQ(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)

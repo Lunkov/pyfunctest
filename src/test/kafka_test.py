@@ -31,8 +31,7 @@ class TestKafka(unittest.TestCase):
     time.sleep(2)
 
     # Test connect
-    #conn = kafka.getConnect()
-    #self.assertIsNotNone(conn)
+    self.assertIsNotNone(kafka.reconnect())
 
     self.assertTrue(kafka.send('channel-test', 'message 1'))
 

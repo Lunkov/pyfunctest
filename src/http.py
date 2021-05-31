@@ -29,7 +29,7 @@ class HTTP():
     self.host = 'localhost'
     if 'HTTP_HOST' in self.config:
       self.host = self.config['HTTP_HOST']
-    self.port = '21'
+    self.port = '80'
     if 'HTTP_PORT' in self.config:
       self.port = self.config['HTTP_PORT']
     self.port = int(self.port)

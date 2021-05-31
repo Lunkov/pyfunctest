@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import psycopg2
-import traceback
 
 class Postgre(object):
   ''' Class for work with DB '''

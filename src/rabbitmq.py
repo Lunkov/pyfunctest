@@ -5,10 +5,6 @@
 import os
 import sys
 import time
-import git
-import shutil
-import docker
-import traceback
 import pika
 import filecmp
 from pprint import pprint

@@ -25,8 +25,7 @@ class TestPostgre(unittest.TestCase):
     
     pg = fm.newPostgre('pg')
     
-    dbconn = pg.reconnect()
-    self.assertIsNone(dbconn)
+    self.assertIsNone(pg.reconnect())
 
     # Start service
     srvPg = fm.newDocker('pg')

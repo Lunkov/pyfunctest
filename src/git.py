@@ -4,10 +4,8 @@
 
 import os
 import sys
-import time
 import git
 import shutil
-import traceback
 
 class GIT(object):
   ''' Class for load and build environment modules for functional tests '''

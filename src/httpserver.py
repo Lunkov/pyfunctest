@@ -50,7 +50,7 @@ class HTTPSrv():
     self.pathTmp = pathTmp
     self.moduleName = self.config['NAME']
     self.host = 'localhost'
-    self.port = '21'
+    self.port = '80'
     if 'HTTP_PORT' in self.config:
       self.port = self.config['HTTP_PORT']
     self.port = int(self.port)

@@ -189,10 +189,6 @@ class Docker(object):
 
   def run(self, rm = True):
     """ Run docker container of module
-        Parameters
-        ----------
-        moduleName : str
-            name of module
     """
     if not self.isDocker():
       print("ERR: Docker run: Not Found (mod='%s')" % self.moduleName)
@@ -244,7 +240,6 @@ class Docker(object):
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
-      # container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, network_mode='bridge', name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, network=self.networkName, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       self.statusWaiting('running')
 

@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import MySQLdb
-import traceback
 
 class MySQL(object):
   ''' Class for work with DB '''

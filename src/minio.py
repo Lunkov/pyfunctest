@@ -6,7 +6,6 @@ import os
 import io
 import sys
 import time
-import traceback
 import filecmp
 from minio import Minio
 
