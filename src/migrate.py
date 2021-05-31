@@ -7,7 +7,6 @@ import sys
 import docker
 import git
 import shutil
-import json
 
 class Migrate(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -102,7 +101,8 @@ class Migrate(object):
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' migrate: %s" % (image, command)) 
-      # print("DBG: Docker: docker run -v %s:%s --network %s %s %s" % (vm, vmi, self.networkName, image, command)) 
+      if self.verbose:
+        print("DBG: Docker: docker run -v %s:%s --network %s %s %s" % (vm, vmi, self.networkName, image, command)) 
       result = self.docker.containers.run(image, command=command, network=self.networkName, volumes=volumes, detach=False, auto_remove=True, stderr=True)
       if self.verbose:
         for s in result.decode('utf-8').split():
