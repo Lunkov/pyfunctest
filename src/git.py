@@ -5,7 +5,7 @@
 import os
 import sys
 import git
-import shutil
+from .lfs import LFS
 
 class GIT(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -29,7 +29,7 @@ class GIT(object):
   def clone(self):
     """ Clone git repository
     """
-    shutil.rmtree(self.pathTmp, ignore_errors=True)
+    LFS.rm(self.pathTmp)
     if self.verbose:
       print("DBG: git.Clone(%s): %s => %s" % (self.moduleName, self.config['GIT_SRC'], self.pathTmp))
     repo = git.Repo.clone_from(self.config['GIT_SRC'], self.pathTmp, branch=self.config['GIT_BRANCH'])

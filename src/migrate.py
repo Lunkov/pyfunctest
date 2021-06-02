@@ -6,7 +6,7 @@ import os
 import sys
 import docker
 import git
-import shutil
+from .lfs import LFS
 
 class Migrate(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -69,7 +69,7 @@ class Migrate(object):
       return False
 
     if 'MIGRATE_GIT_SRC' in self.config:
-      shutil.rmtree(self.pathTmp, ignore_errors=True)
+      LFS.rm(self.pathTmp)
       if self.verbose:
         print("DBG: git.Clone(%s): %s => %s" % (self.moduleName, self.config['MIGRATE_GIT_SRC'], self.pathTmp))
       repo = git.Repo.clone_from(self.config['MIGRATE_GIT_SRC'], self.pathTmp, branch=self.config['MIGRATE_GIT_BRANCH'])

@@ -5,7 +5,6 @@
 import os
 import sys
 import time
-import shutil
 from dotenv import dotenv_values
 from .docker import Docker
 from .git import GIT
@@ -18,6 +17,7 @@ from .rabbitmq import RabbitMQ
 from .kafka import Kafka
 from .http import HTTP
 from .httpserver import HTTPSrv
+from .lfs import LFS
 
 class FMods(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -136,7 +136,7 @@ class FMods(object):
   def stopAll(self):
     """ tearDown for UTests
     """
-    shutil.rmtree(self.pathTmp, ignore_errors=True)
+    LFS.rm(self.pathTmp)
     for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER'], reverse=True):
       moduleName = s[1]['NAME']
       config = s[1]
