@@ -28,4 +28,4 @@ class LFS(object):
     shutil.rmtree(path, ignore_errors=True)
     mypath = Path(path)
     if mypath.is_dir():
-      [os.remove(f) for f in os.listdir(path) if self.isHidden(f)]
+      [os.remove(f) for f in os.listdir(path) if LFS.isHidden(f)]
