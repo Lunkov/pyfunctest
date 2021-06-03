@@ -106,9 +106,9 @@ class Migrate(object):
       result = self.docker.containers.run(image, command=command, network=self.networkName, volumes=volumes, detach=False, auto_remove=True, stderr=True)
       if self.verbose:
         for s in result.decode('utf-8').split():
-          print("DBG: Migrate '%s': %s" % (image, s)) 
+          print("DBG: Migrate(%s) '%s': %s" % (self.moduleName, image, s)) 
     except Exception as e:
-      print("FATAL: Docker run migrate '%s': %s" % (image, str(e)))
+      print("FATAL: Docker run migrate '%s:%s': %s" % (self.moduleName, image, str(e)))
       return False
       
     return True

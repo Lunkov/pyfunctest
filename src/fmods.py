@@ -121,6 +121,9 @@ class FMods(object):
         srv.build(False)
         srv.run(False)
         srv.statusWaiting('running')
+      if 'MIGRATE_COMMAND' in config:
+        migrate = self.newMigrate(moduleName)
+        migrate.run()
       if 'CONTAINER_SRC' in config:
         srv = self.newDocker(moduleName)
         srv.run()
@@ -128,9 +131,6 @@ class FMods(object):
       if 'CONTAINER_COMPOSE' in config:
         srv = self.newDocker(moduleName)
         srv.startCompose()
-      if 'MIGRATE_COMMAND' in config:
-        migrate = self.newMigrate(moduleName)
-        migrate.run()
 
 
   def stopAll(self):
