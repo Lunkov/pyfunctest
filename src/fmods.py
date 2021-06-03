@@ -22,7 +22,7 @@ from .lfs import LFS
 class FMods(object):
   ''' Class for load and build environment modules for functional tests '''
 
-  def __init__ (self, pathModules, pathTmp, verbose):
+  def __init__ (self, pathModules, pathTmp = '', verbose = True):
     """ Initialising object
     Parameters
     ----------
@@ -36,9 +36,9 @@ class FMods(object):
     self.verbose = verbose
     self.pathModules = os.path.abspath(pathModules)
     self.pathTmp = pathTmp
-    os.makedirs(self.pathTmp, exist_ok=True)
-    if self.pathTmp == "":
+    if self.pathTmp == '':
       self.pathTmp = os.path.join(os.getcwd(), 'tmp')
+    os.makedirs(self.pathTmp, exist_ok=True)
     self.modules = dict()
   
   def scan(self):

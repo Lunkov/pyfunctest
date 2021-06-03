@@ -8,7 +8,7 @@ from src.fmods import FMods
 class TestGIT(unittest.TestCase):
 
   def testClone(self):
-    fm = FMods("data/mods/", "data/tmp/", True)
+    fm = FMods('data/mods/')
 		
     self.assertEqual(fm.count(), 0)
     
