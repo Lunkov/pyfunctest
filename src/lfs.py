@@ -4,28 +4,35 @@
 
 import os
 import sys
+import glob
 import shutil
+import stat
 from pathlib import Path
-if os.name == 'nt':
-  import win32api, win32con
-
 
 class LFS(object):
   ''' Class for load and build environment modules for functional tests '''
-  
-  @staticmethod 
-  def isHidden(f):
-    if os.name== 'nt':
-        attribute = win32api.GetFileAttributes(f)
-        return attribute & (win32con.FILE_ATTRIBUTE_HIDDEN | win32con.FILE_ATTRIBUTE_SYSTEM)
-    else:
-        return f.startswith('.') #linux-osx
 
-  @staticmethod 
-  def rm(path):
+  @staticmethod
+  def rm(pathName):
     """ remove folders
     """
-    shutil.rmtree(path, ignore_errors=True)
-    mypath = Path(path)
+    shutil.rmtree(pathName, ignore_errors=True)
+    mypath = Path(pathName)
     if mypath.is_dir():
-      [os.remove(f) for f in os.listdir(path) if LFS.isHidden(f)]
+      for root, dirs, files in os.walk(pathName):
+        for f in files:
+          try:
+            os.chmod(os.path.join(root, f),stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH|stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR|stat.S_IWGRP|stat.S_IXGRP)
+          except:
+            continue
+          os.remove(os.path.join(root, f))
+        for d in dirs:
+          shutil.rmtree(os.path.join(root, d), ignore_errors=True)
+      for f in os.scandir(pathName):
+        try:
+          if f.is_dir():
+            shutil.rmtree(f, ignore_errors=True)
+          if f.is_file():
+            os.remove(f)
+        except:
+          continue
