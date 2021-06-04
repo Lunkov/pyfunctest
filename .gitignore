@@ -1,4 +1,5 @@
 *.pyc
 src/*.pyc
 data/tmp
+tmp
 __pycache__
