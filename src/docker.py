@@ -3,11 +3,12 @@
 ''' Class for work with testing Modules '''
 
 import os
+import io
 import sys
 import time
 import subprocess
 import docker
-import traceback
+import tarfile
 
 class Docker(object):
   ''' Class for load and build environment modules for functional tests '''
@@ -127,11 +128,28 @@ class Docker(object):
       return False
 
     try:
-      print("LOG: Docker: Stop '%s' container" % self.containerName)
+      print("LOG: Docker: Start '%s' container" % self.containerName)
       container = self.docker.containers.get(self.containerName)
       container.start(timeout=120)
     except:
       print("LOG: Docker: Container '%s' Not Found for starting" % (containerName))
+      return False
+    return self.statusWaiting('running')
+
+  def restart(self):
+    """ Start docker container of module
+    """
+    if not self.isDocker():
+      print("ERR: Docker restart: Not Found (mod='%s')" % self.moduleName)
+      return False
+
+    try:
+      if self.verbose:
+        print("DBG: Docker: Restart '%s' container" % self.containerName)
+      container = self.docker.containers.get(self.containerName)
+      container.restart()
+    except:
+      print("LOG: Docker: Container '%s' Not Found for restarting" % (containerName))
       return False
     return self.statusWaiting('running')
 
@@ -154,7 +172,6 @@ class Docker(object):
       print("LOG: Docker: Container '%s' Not Found for stopping" % (self.containerName))
       return False
     return self.statusWaiting('stopped')
-
 
   def remove(self):
     """ Remove docker container of module
@@ -246,6 +263,16 @@ class Docker(object):
     except Exception as e:
       print("FATAL: Docker run container '%s': %s" % (self.containerName, str(e)))
       return False
+      
+    if 'CONTAINER_PATCH' in self.config:
+      cp = self.config['CONTAINER_PATCH'].split(':')
+      if len(cp) != 2 :
+        print("ERR: Docker: Patch '%s' container: " % (self.containerName, self.config['CONTAINER_PATCH']))
+        return False
+      srcPath = os.path.join(self.config['MOD_PATH'] , cp[0])
+      self.copy(srcPath, cp[1])
+      self.restart()
+
     return True
 
   def statusWaiting(self, status, timeout = 120):
@@ -319,3 +346,20 @@ class Docker(object):
   def stopCompose(self, fileName = ''):
     fileName = self.getNameDockerCompose(fileName)
     return self.runProcess("Stop", "docker-compose --file %s down" % fileName, fileName)
+
+  def copy(self, src, dstDir):
+    """ src shall be an absolute path """
+    stream = io.BytesIO()
+    with tarfile.open(fileobj=stream, mode='w|') as tar, open(src, 'rb') as f:
+      info = tar.gettarinfo(fileobj=f)
+      info.name = os.path.basename(src)
+      tar.addfile(info, f)
+
+    try:
+      container = self.docker.containers.get(self.containerName)
+      container.put_archive(dstDir, stream.getvalue())
+    except Exception as e:
+      print("FATAL: Docker copy container '%s': %s" % (self.containerName, str(e)))
+      return False
+
+    return True

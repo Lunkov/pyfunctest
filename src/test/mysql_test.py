@@ -61,6 +61,12 @@ class TestMySql(unittest.TestCase):
     res = msql.getData('select * from article')
     self.assertEqual(res, ((1, 'article 1', 'description'),))
 
+    # Migration
+    mgPg = fm.newMigrate('mysql')
+    self.assertTrue(mgPg.run())
+    
+    self.assertEqual(msql.getTableList(), ['article', 'article2'])
+
     # Remove
     ok = srvMySQL.remove()
     self.assertEqual(ok, True)

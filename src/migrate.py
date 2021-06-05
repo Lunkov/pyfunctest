@@ -99,12 +99,13 @@ class Migrate(object):
     volumes[vm] = {'bind': vmi, 'mode': 'ro'}
 
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
+    result = ''
     try:
       print("LOG: Docker: Run '%s' migrate: %s" % (image, command)) 
       if self.verbose:
         print("DBG: Docker: docker run -v %s:%s --network %s %s %s" % (vm, vmi, self.networkName, image, command)) 
       result = self.docker.containers.run(image, command=command, network=self.networkName, volumes=volumes, detach=False, auto_remove=True, stderr=True)
-      if self.verbose:
+      if self.verbose and result:
         for s in result.decode('utf-8').split():
           print("DBG: Migrate(%s) '%s': %s" % (self.moduleName, image, s)) 
     except Exception as e:
