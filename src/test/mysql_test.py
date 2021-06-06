@@ -65,7 +65,7 @@ class TestMySql(unittest.TestCase):
     mgPg = fm.newMigrate('mysql')
     self.assertTrue(mgPg.run())
     
-    self.assertEqual(msql.getTableList(), ['article', 'article2'])
+    self.assertEqual(msql.getTableList(), ['GeoIP_country_ru', '_b_iblock_element_prop_s30_del', 'article', 'article2', 'article3', 'schema_migrations'])
 
     # Remove
     ok = srvMySQL.remove()
