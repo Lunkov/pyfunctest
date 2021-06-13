@@ -107,31 +107,56 @@ class FMods(object):
     """
     return os.path.join(self.pathTmp, 'git', moduleName)
 
+  def _gitClone(self, config, moduleName):
+    if 'GIT_SRC' in config:
+      gt = self.newGIT(moduleName)
+      gt.clone()
+
+  def _dockerBuild(self, config, moduleName):
+    if 'DOCKERFILE' in config:
+      srv = self.newDocker(moduleName)
+      srv.build(False)
+      srv.run(False)
+      srv.statusWaiting('running')
+
+  def _dockerRun(self, config, moduleName):
+    if 'CONTAINER_SRC' in config:
+      srv = self.newDocker(moduleName)
+      srv.run()
+      srv.statusWaiting('running')
+
+  def _dockerCompose(self, config, moduleName):
+    if 'CONTAINER_COMPOSE' in config:
+      srv = self.newDocker(moduleName)
+      srv.startCompose()
+
+  def _migrate(self, config, moduleName):
+    if 'MIGRATE_COMMAND' in config:
+      migrate = self.newMigrate(moduleName)
+      migrate.run()
+
   def startAll(self):
     """ setUp for UTests
     """
+    operations = {
+        'clone': self._gitClone,
+        'run': self._dockerRun,
+        'build': self._dockerBuild,
+        'compose': self._dockerCompose,
+        'migrate': self._migrate,
+    }      
     for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
       moduleName = s[1]['NAME']
       config = s[1]
-      if 'GIT_SRC' in config:
-        gt = self.newGIT(moduleName)
-        gt.clone()
-      if 'DOCKERFILE' in config:
-        srv = self.newDocker(moduleName)
-        srv.build(False)
-        srv.run(False)
-        srv.statusWaiting('running')
-      if 'CONTAINER_SRC' in config:
-        srv = self.newDocker(moduleName)
-        srv.run()
-        srv.statusWaiting('running')
-      if 'CONTAINER_COMPOSE' in config:
-        srv = self.newDocker(moduleName)
-        srv.startCompose()
-      if 'MIGRATE_COMMAND' in config:
-        migrate = self.newMigrate(moduleName)
-        migrate.run()
-
+      if 'ACTIONS' in config:
+        seq = config['ACTIONS'].split(',')
+      else:
+        seq = ['clone', 'build', 'compose', 'run', 'migrate']
+      for s in seq:
+        if s in operations:
+          if self.verbose:
+            print("DBG: Module(%s) Action: %s" % (moduleName, s))
+          operations[s](config, moduleName)
 
   def stopAll(self):
     """ tearDown for UTests
