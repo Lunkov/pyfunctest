@@ -96,6 +96,10 @@ class Migrate(object):
     vmi = '/migrations'
     if 'MIGRATE_IMAGE_PATH' in self.config:
       vmi = self.config['MIGRATE_IMAGE_PATH']
+    if not os.path.isdir(vm):
+      print("FATAL: Path for migrate is not exists: '%s:%s'" % (self.moduleName, vm))
+      return False
+      
     volumes[vm] = {'bind': vmi, 'mode': 'ro'}
 
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
