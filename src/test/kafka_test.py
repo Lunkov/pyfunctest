@@ -28,8 +28,6 @@ class TestKafka(unittest.TestCase):
     self.assertTrue(srvKafka.statusWaiting('running'))
     self.assertEqual(srvKafka.status(), 'running')
 
-    time.sleep(2)
-
     # Test connect
     self.assertIsNotNone(kafka.reconnect())
 

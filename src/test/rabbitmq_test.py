@@ -32,8 +32,6 @@ class TestRabbitMQ(unittest.TestCase):
     self.assertTrue(srvRabbitMQ.statusWaiting('running'))
     self.assertEqual(srvRabbitMQ.status(), 'running')
 
-    time.sleep(5)
-
     # Test connect
     queue = 'log3'
     exchange = 'log3'
@@ -56,6 +54,10 @@ class TestRabbitMQ(unittest.TestCase):
     msg, ok = rabbitmq2.receive(queue)
     self.assertTrue(ok)
     self.assertEqual(msg, 'message 2')
+
+
+    self.assertTrue(rabbitmq1.sendFile(exchange, routing_key, 'data/files/test.txt'))
+    self.assertTrue(rabbitmq1.receiveAndCompareFile(queue, 'data/files/test.txt'))
 
     rabbitmq1.close()
     rabbitmq2.close()

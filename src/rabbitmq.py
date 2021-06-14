@@ -140,16 +140,13 @@ class RabbitMQ():
   def receive(self, queue):
     if self.reconnect() is None:
       print("FATAL: Receive to closed RabbitMQ '%s'" % (self.url))
-      return False
+      return '', False
     message = ''
     try:
       
       method_frame, header_frame, message = self.channel.basic_get(queue = queue)
       if self.verbose:
         print("DBG: Receive from RabbitMQ '%s': '%s', header='%s', msg='%s'" % (self.url, method_frame, header_frame, message))
-      pprint(header_frame)
-      pprint(message)
-      pprint(method_frame)
       if method_frame:
         self.channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         return message.decode('ascii'), True
@@ -161,4 +158,24 @@ class RabbitMQ():
       return '', False
       
     return message, True
+
+  def receiveAndCompareFile(self, queue, fileName):
+    msg, ok = self.receive(queue)
+    if not ok:
+      return False
+
+    try:
+      file1 = os.path.join(self.pathTmp, fileName)
+      os.makedirs(os.path.dirname(file1), exist_ok=True)
+
+      fileh = open(file1, 'w')
+      fileh.write(msg)
+      fileh.close()
+
+      result = filecmp.cmp(file1, fileName, shallow=False)
+      os.remove(file1)
+    except Exception as e:
+      print("FATAL: compareFiles RabbitMQ(%s): %s" % (self.url, str(e)))
+      return False
+    return result
 
