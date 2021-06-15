@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import filecmp
+from pprint import pprint
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from kafka import TopicPartition
@@ -45,7 +46,13 @@ class Kafka():
     return self.reconnect()
     
   def reconnect(self):
+    if self.consumer:
+      return self.consumer
     self.close()
+
+    if self.verbose:
+      print("DBG: Reconnecting Kafka '%s'" % (self.url_in))
+
     timeout = 15
     stop_time = 1
     elapsed_time = 0
@@ -70,7 +77,8 @@ class Kafka():
       time.sleep(stop_time)
       elapsed_time += stop_time
       try:
-        self.consumer = KafkaConsumer(bootstrap_servers=self.url_out, group_id='main', enable_auto_commit=True)
+        # group_id='main', 
+        self.consumer = KafkaConsumer(bootstrap_servers=self.url_out, enable_auto_commit=True, auto_commit_interval_ms=50, request_timeout_ms=11000, consumer_timeout_ms=2000, auto_offset_reset='latest')
       except Exception as e:
         str_err = str(e)
         print("DBG: WAIT: %d: Connect KafkaConsumer '%s':%s" % (elapsed_time, self.url_out, str_err))
@@ -79,36 +87,49 @@ class Kafka():
       print("FATAL: KafkaConsumer '%s': %s" % (self.url_out, str_err))
       return None
 
+    if self.verbose:
+      print("DBG: Reconnected Kafka '%s'" % (self.url_in))
+
     return self.consumer
 
 
   def close(self):
-    if not self.producer is None:
+    if self.verbose:
+      print("DBG: Close Kafka '%s'" % (self.url_in))
+    if self.producer:
       self.producer.close()
-    if not self.consumer is None:
+    if self.consumer:
       self.consumer.close()
     self.consumer = None
     self.producer = None
+    if self.verbose:
+      print("DBG: Closed Kafka '%s'" % (self.url_in))
     
   def send(self, topic, message):
     self.reconnect()
     try:
+      if self.verbose:
+        print("DBG: Sending to Kafka '%s': topic='%s', msg='%s'" % (self.url_in, topic, message.encode('ascii')))
       self.producer.send(topic, message.encode('ascii'))
       self.producer.flush()
+      if self.verbose:
+        print("DBG: Send to Kafka '%s': topic='%s', msg='%s'" % (self.url_in, topic, message.encode('ascii')))
     except Exception as e:
       print("FATAL: Send to Kafka '%s': %s" % (self.url_in, str(e)))
       return False
 
-    self.close()
     return True
 
   def sendFile(self, topic, fileName):
     try:
       msgFile = open(fileName,'r')
       self.reconnect()
+      if self.verbose:
+        print("DBG: Sending to Kafka '%s': topic='%s', fileName='%s'" % (self.url_in, topic, fileName))
       self.producer.send(topic, msgFile.read().encode('ascii'))
       self.producer.flush()
-      self.close()
+      if self.verbose:
+        print("DBG: Send file to Kafka '%s': topic='%s', fileName='%s'" % (self.url_in, topic, fileName))
     except Exception as e:
       print("FATAL: Send to Kafka '%s': %s" % (self.url_in, str(e)))
       return False
@@ -119,16 +140,59 @@ class Kafka():
     self.reconnect()
     message = None
     try:
+      if self.verbose:
+        print("DBG: Recieving to Kafka '%s': topic='%s'" % (self.url_in, topic))
       partition = TopicPartition(topic, 0)
       self.consumer.assign([partition])
-      self.consumer.seek(partition, 0)
+      self.consumer.seek_to_beginning(partition)
       # Read the message
-      message = next(self.consumer)
+      for message in self.consumer:
+        continue
       if self.verbose:
         print("DBG: Receive from Kafka '%s': topic='%s', msg='%s'" % (self.url_in, topic, message.value))
+    except Exception as e:
+      pprint(e)
+      print("FATAL: Recieve from Kafka '%s': %s" % (self.url_in, str(e)))
+      return '', False
+    
+    return message.value.decode('ascii'), True
+
+
+  def receiveAll(self, topic):
+    self.reconnect()
+    message = None
+    try:
+      if self.verbose:
+        print("DBG: Recieving to Kafka '%s': topic='%s'" % (self.url_in, topic))
+      partition = TopicPartition(topic, 0)
+      self.consumer.assign([partition])
+      self.consumer.seek_to_beginning(partition)
+      # Read the message
+      for message in self.consumer:
+        if self.verbose:
+          print("DBG: Receive from Kafka '%s': topic='%s', msg='%s'" % (self.url_in, topic, message.value))
     except Exception as e:
       print("FATAL: Recieve from Kafka '%s': %s" % (self.url_in, str(e)))
       return '', False
     
-    self.close()
     return message.value.decode('ascii'), True
+
+  def receiveAndCompareFile(self, queue, fileName):
+    msg, ok = self.receive(queue)
+    if not ok:
+      return False
+
+    try:
+      file1 = os.path.join(self.pathTmp, fileName)
+      os.makedirs(os.path.dirname(file1), exist_ok=True)
+
+      fileh = open(file1, 'w')
+      fileh.write(msg)
+      fileh.close()
+
+      result = filecmp.cmp(file1, fileName, shallow=False)
+      os.remove(file1)
+    except Exception as e:
+      print("FATAL: compareFiles Kafka(%s): %s" % (self.url, str(e)))
+      return False
+    return result

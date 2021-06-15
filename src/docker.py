@@ -326,7 +326,7 @@ class Docker(object):
     try:
       if self.verbose:
         print("DBG: %sing Docker-Compose '%s'" % (action, fileName))
-      popen = subprocess.Popen("docker-compose --file %s up --force-recreate --detach" % fileName, shell=True, universal_newlines=True)
+      popen = subprocess.Popen(cmd, shell=True, universal_newlines=True)
 
       output, error = popen.communicate(timeout=60)
       if self.verbose:
@@ -345,7 +345,7 @@ class Docker(object):
 
   def stopCompose(self, fileName = ''):
     fileName = self.getNameDockerCompose(fileName)
-    return self.runProcess("Stop", "docker-compose --file %s down" % fileName, fileName)
+    return self.runProcess("Stop", "docker-compose --file %s down" % fileName, fileName) # --rmi all
 
   def copy(self, src, dstDir):
     """ src shall be an absolute path """

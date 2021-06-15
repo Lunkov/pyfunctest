@@ -19,7 +19,10 @@ class TestKafka(unittest.TestCase):
     fm.scan()
     self.assertTrue(fm.count() > 7)
 
-    kafka = fm.newKafka('kafka')
+    channel = 'channel-test'
+    
+    kafka1 = fm.newKafka('kafka')
+    kafka2 = fm.newKafka('kafka')
 
     # Start service
     srvKafka = fm.newDocker('kafka')
@@ -29,14 +32,22 @@ class TestKafka(unittest.TestCase):
     self.assertEqual(srvKafka.status(), 'running')
 
     # Test connect
-    self.assertIsNotNone(kafka.reconnect())
+    self.assertIsNotNone(kafka1.reconnect())
+    
+    self.assertTrue(kafka1.send(channel, 'message 1'))
 
-    self.assertTrue(kafka.send('channel-test', 'message 1'))
-
-    msg, ok = kafka.receive('channel-test')
+    msg, ok = kafka2.receive(channel)
     self.assertTrue(ok)
     self.assertEqual(msg, 'message 1')
     
+    # kafka2.receiveAll(channel)
+    
+    self.assertTrue(kafka1.sendFile(channel, 'data/files/test.txt'))
+    self.assertTrue(kafka2.receiveAndCompareFile(channel, 'data/files/test.txt'))
+
+    kafka1.close()
+    kafka2.close()
+
     # Remove
     self.assertTrue(srvKafka.stopCompose(os.path.join(os.getcwd(), 'data/mods/kafka/docker-compose.yml')))
     self.assertEqual(srvKafka.status(), 'not found')
