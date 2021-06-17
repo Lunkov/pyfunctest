@@ -110,6 +110,8 @@ class MinIO(object):
       if not found:
           self.handle.make_bucket(bucketName)
       self.handle.put_object(bucketName, fullPath, io.BytesIO(b''), 0, content_type='application/x-directory')
+      if self.verbose:
+        print("DBG: Make folder '%s:%s' into Minio(%s)" % (bucketName, fullPath, self.url))
     except Exception as e:
       print("FATAL: Make folder '%s' into Minio(%s): %s" % (fullPath, self.url, str(e)))
       return False

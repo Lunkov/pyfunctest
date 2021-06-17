@@ -114,6 +114,9 @@ class Migrate(object):
           print("DBG: Migrate(%s) '%s': %s" % (self.moduleName, image, s)) 
     except Exception as e:
       print("FATAL: Docker run migrate '%s:%s': %s" % (self.moduleName, image, str(e)))
+      if result:
+        for s in result.decode('utf-8').split():
+          print("ERR: Migrate(%s) '%s': %s" % (self.moduleName, image, s)) 
       return False
       
     return True
