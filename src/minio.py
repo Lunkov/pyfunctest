@@ -76,6 +76,8 @@ class MinIO(object):
   def init(self):
     if not 'INIT_MINIO_CREATE_FOLDERS' in self.config:
       return
+    if self.reconnect() is None:
+      return
     folders = self.config['INIT_MINIO_CREATE_FOLDERS']
     af = folders.split(';')
     for folder in af:

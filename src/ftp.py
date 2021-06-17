@@ -66,7 +66,7 @@ class FTP():
     
   def reconnect(self):
     self.close()
-    timeout = 15
+    timeout = 20
     stop_time = 1
     elapsed_time = 0
     str_err = ''
