@@ -33,6 +33,8 @@ class TestKafka(unittest.TestCase):
 
     # Test connect
     self.assertIsNotNone(kafka1.reconnect())
+
+    kafka1.init()
     
     self.assertTrue(kafka1.send(channel, 'message 1'))
 

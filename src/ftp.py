@@ -160,6 +160,14 @@ class FTP():
     
     return res
 
+  def init(self):
+    if not 'INIT_FTP_CREATE_FOLDERS' in self.config:
+      return
+    folders = self.config['INIT_FTP_CREATE_FOLDERS']
+    af = folders.split(';')
+    for folder in af:
+      self.mkDir(folder)
+
   def cd(self, currentDir):
     self.reconnect()
     self.handle.cwd('/')

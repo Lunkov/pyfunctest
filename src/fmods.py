@@ -135,6 +135,20 @@ class FMods(object):
       migrate = self.newMigrate(moduleName)
       migrate.run()
 
+  def _init(self, config, moduleName):
+    if 'INIT_RABBITMQ_CREATE_CHANNELS' in config:
+      srv = self.newRabbitMQ(moduleName)
+      srv.init()
+    if 'INIT_KAFKA_CREATE_CHANNELS' in config:
+      srv = self.newKafka(moduleName)
+      srv.init()
+    if 'INIT_MINIO_CREATE_FOLDERS' in config:
+      srv = self.newMinIO(moduleName)
+      srv.init()
+    if 'INIT_FTP_CREATE_FOLDERS' in config:
+      srv = self.newFTP(moduleName)
+      srv.init()
+
   def startAll(self):
     """ setUp for UTests
     """
@@ -144,6 +158,7 @@ class FMods(object):
         'build': self._dockerBuild,
         'compose': self._dockerCompose,
         'migrate': self._migrate,
+        'init': self._init,
     }      
     for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
       moduleName = s[1]['NAME']

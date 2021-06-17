@@ -73,6 +73,16 @@ class MinIO(object):
       self.handle.close()
     self.handle = None
 
+  def init(self):
+    if not 'INIT_MINIO_CREATE_FOLDERS' in self.config:
+      return
+    folders = self.config['INIT_MINIO_CREATE_FOLDERS']
+    af = folders.split(';')
+    for folder in af:
+      f = folder.split(':')
+      if len(f) == 2:
+        self.mkDir(f[0], f[1])    
+
   def getBasketsList(self):
     bs = self.handle.list_buckets()
     res = []
@@ -103,7 +113,7 @@ class MinIO(object):
       return False
     return True
     
-  def getListObjects(self, bucketName, currentDir):
+  def getListObjects(self, bucketName, currentDir=''):
     res = []
     objects = []
     try:

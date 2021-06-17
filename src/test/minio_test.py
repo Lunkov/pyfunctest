@@ -60,6 +60,11 @@ class TestMINIO(unittest.TestCase):
 
     self.assertEqual(minio.getBasketsList(), ['bucket-test'])
 
+    minio.init()
+    self.assertEqual(minio.getBasketsList(), ['bucket-test', 'bucket-test2'])
+    self.assertEqual(minio.getListObjects('bucket-test'), ['folder000', 'folder1/folder12', 'folder1/folder13', 'folder1/test.txt'])
+    self.assertEqual(minio.getListObjects('bucket-test2'), ['folder1/folder1'])
+
     # Remove
     self.assertTrue(srvMINIO.remove())
     self.assertEqual(srvMINIO.status(), 'not found')

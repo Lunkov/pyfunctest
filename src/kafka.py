@@ -6,10 +6,10 @@ import os
 import sys
 import time
 import filecmp
-from pprint import pprint
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from kafka import TopicPartition
+from kafka.admin  import KafkaAdminClient, NewTopic
 from kafka.errors import KafkaError
 
 class Kafka():
@@ -92,7 +92,6 @@ class Kafka():
 
     return self.consumer
 
-
   def close(self):
     if self.verbose:
       print("DBG: Close Kafka '%s'" % (self.url_in))
@@ -104,6 +103,27 @@ class Kafka():
     self.producer = None
     if self.verbose:
       print("DBG: Closed Kafka '%s'" % (self.url_in))
+
+  def init(self):
+    if not 'INIT_KAFKA_CREATE_CHANNELS' in self.config:
+      return
+    if self.reconnect() is None:
+      return
+    admin_client = KafkaAdminClient(bootstrap_servers=self.url_out, client_id='test')
+    channels = self.config['INIT_KAFKA_CREATE_CHANNELS']
+    achs = channels.split(';')
+    topic_list = []
+    for channel in achs:
+      if self.verbose:
+        print("DBG: createTopic in Kafka '%s': topic='%s'" % (self.url_out, channel))
+      topic_list.append(NewTopic(name=channel, num_partitions=1, replication_factor=1))
+    res = None
+    try:
+      res = admin_client.create_topics(new_topics=topic_list, validate_only=False)
+    except Exception as e:
+      print("ERR: createTopic in Kafka '%s': err='%s'" % (self.url_out, str(e)))
+
+    admin_client.close()
     
   def send(self, topic, message):
     self.reconnect()

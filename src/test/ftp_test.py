@@ -51,6 +51,8 @@ class TestFTP(unittest.TestCase):
 
     self.assertEqual(ftp.getDirList(''), ['folder-test', 'incoming'])
     
+    ftp.init()
+    self.assertEqual(ftp.getDirList(''), ['folder-test', 'folder-test1', 'incoming'])
     
     # Remove
     ok = srvFTP.remove()

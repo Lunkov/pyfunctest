@@ -7,7 +7,6 @@ import sys
 import time
 import pika
 import filecmp
-from pprint import pprint
 
 class RabbitMQ():
   ''' Class for work with RabbitMQ '''
@@ -90,7 +89,17 @@ class RabbitMQ():
       print("ERR: Close connect to RabbitMQ '%s': %s" % (self.url, str(e)))
     self.connect = None
     self.channel = None
-    
+
+  def init(self):
+    if not 'INIT_RABBITMQ_CREATE_CHANNELS' in self.config:
+      return
+    channels = self.config['INIT_RABBITMQ_CREATE_CHANNELS']
+    achs = channels.split(';')
+    for channel in achs:
+      ch = channel.split(':')
+      if len(ch) == 4:
+        self.createRoute(ch[0], ch[1], ch[2], ch[3])
+
   def createRoute(self, exchange, exchange_type, key, queue):
     if self.reconnect() is None:
       print("FATAL: createRoute to closed RabbitMQ '%s'" % (self.url))
@@ -99,6 +108,8 @@ class RabbitMQ():
       self.channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
       self.channel.queue_declare(queue)
       self.channel.queue_bind(exchange=exchange, queue=queue, routing_key=key)
+      if self.verbose:
+        print("DBG: createRoute in RabbitMQ '%s': exchange='%s' type='%s' routing_key='%s' queue='%s'" % (self.url, exchange, exchange_type, key, queue))
     except Exception as e:
       print("ERR: createRoute in RabbitMQ '%s': %s" % (self.url, str(e)))
       return False

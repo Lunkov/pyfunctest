@@ -38,7 +38,8 @@ class TestRabbitMQ(unittest.TestCase):
     routing_key = ''
     exchange_type = 'fanout'
     
-    self.assertTrue(rabbitmq1.createRoute(exchange, exchange_type, routing_key, queue))
+    rabbitmq1.init()
+    #self.assertTrue(rabbitmq1.createRoute(exchange, exchange_type, routing_key, queue))
     
     self.assertTrue(rabbitmq1.send(exchange, routing_key, 'message 1'))
     self.assertTrue(rabbitmq1.send(exchange, routing_key, 'message 2'))
