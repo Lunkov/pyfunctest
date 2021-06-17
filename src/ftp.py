@@ -8,6 +8,8 @@ import time
 import ftplib
 import filecmp
 import socket
+import errno
+import pprint
 
 class CustomFTP(ftplib.FTP):
 
@@ -180,14 +182,25 @@ class FTP():
     return self.handle.pwd() == currentDir
 
   def mkDir(self, currentDir):
-    self.reconnect()
-    self.handle.cwd('/')
-    if currentDir != '':
-      self.cdTree(currentDir)
-      try:
-        self.handle.cwd(currentDir)
-      except Exception as e:
-        print("ERR: Change Directory(%s/%s): %s" % (self.url, currentDir, str(e)))
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
+    while elapsed_time < timeout:
+      if elapsed_time > 0:
+        time.sleep(stop_time)
+      elapsed_time += stop_time
+      self.reconnect()
+      self.handle.cwd('/')
+      if currentDir != '':
+        self.cdTree(currentDir)
+        try:
+          self.handle.cwd(currentDir)
+          elapsed_time += timeout
+        except Exception as e:
+          print("ERR: Change Directory(%s/%s): %s" % (self.url, currentDir, str(e)))
+          pprint.pprint(e)
+
     res = self.handle.pwd() == currentDir
     self.handle.cwd('/')
     return res
@@ -207,26 +220,51 @@ class FTP():
           print("ERR: Make Subdirectory(%s/%s): %s" % (self.url, currentDir, str(e)))
   
   def uploadFile(self, pathFTP, filename, fullPath):
-    self.reconnect()
-    try:
-      self.handle.cwd('/')
-      self.cdTree(pathFTP)
-      fileh = open(fullPath, 'rb')  
-      self.handle.storbinary(f'STOR {filename}', fileh)
-      fileh.close()
-    except Exception as e:
-      print("FATAL: uploadFile to FTP(%s): %s" % (self.url, str(e)))
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
+    while elapsed_time < timeout:
+      if elapsed_time > 0:
+        time.sleep(stop_time)
+      elapsed_time += stop_time
+      self.reconnect()
+      try:
+        str_err = ''
+        self.handle.cwd('/')
+        self.cdTree(pathFTP)
+        fileh = open(fullPath, 'rb')  
+        self.handle.storbinary(f'STOR {filename}', fileh)
+        fileh.close()
+        elapsed_time += timeout
+      except Exception as e:
+        print("FATAL: uploadFile to FTP(%s): %s" % (self.url, str(e)))
+        str_err = str(e)
+    if str_err != '':
       return False
     return True
 
   def downloadFile(self, pathFTP, filename, fullPath):
-    self.reconnect()
-    try:
-      self.handle.cwd('/')
-      self.cdTree(pathFTP)
-      self.handle.retrbinary("RETR " + filename, open(fullPath, 'wb').write)
-    except Exception as e:
-      print("FATAL: downloadFile to FTP(%s): %s" % (self.url, str(e)))
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
+    while elapsed_time < timeout:
+      if elapsed_time > 0:
+        time.sleep(stop_time)
+      elapsed_time += stop_time
+      self.reconnect()    
+      try:
+        str_err = ''
+        self.handle.cwd('/')
+        self.cdTree(pathFTP)
+        self.handle.retrbinary("RETR " + filename, open(fullPath, 'wb').write)
+        elapsed_time += timeout
+      except Exception as e:
+        print("FATAL: downloadFile to FTP(%s): %s" % (self.url, str(e)))
+        str_err = str(e)
+
+    if str_err != '':
       return False
     return True
 
@@ -242,14 +280,27 @@ class FTP():
     except Exception as e:
       print("FATAL: compareFiles Local(%s): %s" % (self.url, str(e)))
       return False
-    self.reconnect()
-    try:
-      self.handle.cwd('/')
-      self.cdTree(pathFTP)
-      self.handle.retrbinary("RETR " + filename, open(file1, 'wb').write)
-      result = filecmp.cmp(file1, filePath, shallow=False)
-      os.remove(file1)
-    except Exception as e:
-      print("FATAL: compareFiles FTP(%s): %s" % (self.url, str(e)))
+    timeout = 15
+    stop_time = 1
+    elapsed_time = 0
+    str_err = ''
+    while elapsed_time < timeout:
+      if elapsed_time > 0:
+        time.sleep(stop_time)
+      elapsed_time += stop_time
+      self.reconnect()
+      try:
+        str_err = ''
+        self.handle.cwd('/')
+        self.cdTree(pathFTP)
+        self.handle.retrbinary("RETR " + filename, open(file1, 'wb').write)
+        result = filecmp.cmp(file1, filePath, shallow=False)
+        os.remove(file1)
+        elapsed_time += timeout
+      except Exception as e:
+        print("FATAL: compareFiles FTP(%s): %s" % (self.url, str(e)))
+        str_err = str(e)
+
+    if str_err != '':
       return False
     return result
