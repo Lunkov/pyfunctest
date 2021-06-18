@@ -34,11 +34,15 @@ class Kafka():
     self.producer = None
     self.url_in = 'localhost:9092'
     self.url_out = 'localhost:9094'
+    self.id_group = 'test'
     if 'KAFKA_URL_INSIDE' in self.config:
       self.url_in = self.config['KAFKA_URL_INSIDE']
 
     if 'KAFKA_URL_OUTSIDE' in self.config:
       self.url_out = self.config['KAFKA_URL_OUTSIDE']
+
+    if 'KAFKA_ID_GROUP' in self.config:
+      self.id_group = self.config['KAFKA_ID_GROUP']
   
   def getConnect(self):
     """ Connect to rabbitMQ
@@ -61,7 +65,7 @@ class Kafka():
       time.sleep(stop_time)
       elapsed_time += stop_time
       try:
-        self.producer = KafkaProducer(bootstrap_servers=self.url_out)
+        self.producer = KafkaProducer(bootstrap_servers=self.url_out) # group_id=self.id_group
       except Exception as e:
         str_err = str(e)
         print("DBG: WAIT: %d: Connect KafkaProducer '%s':%s" % (elapsed_time, self.url_in, str_err))
@@ -77,8 +81,7 @@ class Kafka():
       time.sleep(stop_time)
       elapsed_time += stop_time
       try:
-        # group_id='main', 
-        self.consumer = KafkaConsumer(bootstrap_servers=self.url_out, enable_auto_commit=True, auto_commit_interval_ms=50, request_timeout_ms=11000, consumer_timeout_ms=2000, auto_offset_reset='latest')
+        self.consumer = KafkaConsumer(bootstrap_servers=self.url_out, enable_auto_commit=True, group_id=self.id_group, auto_commit_interval_ms=50, request_timeout_ms=11000, consumer_timeout_ms=2000, auto_offset_reset='latest')
       except Exception as e:
         str_err = str(e)
         print("DBG: WAIT: %d: Connect KafkaConsumer '%s':%s" % (elapsed_time, self.url_out, str_err))
@@ -109,7 +112,7 @@ class Kafka():
       return
     if self.reconnect() is None:
       return
-    admin_client = KafkaAdminClient(bootstrap_servers=self.url_out, client_id='test')
+    admin_client = KafkaAdminClient(bootstrap_servers=self.url_out) # group_id=self.id_group
     channels = self.config['INIT_KAFKA_CREATE_CHANNELS']
     achs = channels.split(';')
     topic_list = []
