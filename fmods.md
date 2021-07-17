@@ -1,7 +1,5 @@
 # Table of Contents
 
-* [pylint-recursive](#pylint-recursive)
-  * [check](#pylint-recursive.check)
 * [fmods](#fmods)
   * [FMods](#fmods.FMods)
     * [\_\_init\_\_](#fmods.FMods.__init__)
@@ -12,43 +10,65 @@
     * [getTmpFolder](#fmods.FMods.getTmpFolder)
     * [startAll](#fmods.FMods.startAll)
     * [stopAll](#fmods.FMods.stopAll)
+* [fmod](#fmod)
+  * [FMod](#fmod.FMod)
+    * [\_\_init\_\_](#fmod.FMod.__init__)
+    * [isDocker](#fmod.FMod.isDocker)
 * [minio](#minio)
   * [MinIO](#minio.MinIO)
     * [\_\_init\_\_](#minio.MinIO.__init__)
-    * [getConnect](#minio.MinIO.getConnect)
 * [\_\_init\_\_](#__init__)
 * [mysql](#mysql)
   * [MySQL](#mysql.MySQL)
     * [\_\_init\_\_](#mysql.MySQL.__init__)
-    * [getConnect](#mysql.MySQL.getConnect)
 * [git](#git)
   * [GIT](#git.GIT)
     * [\_\_init\_\_](#git.GIT.__init__)
     * [clone](#git.GIT.clone)
+* [httpserver](#httpserver)
+  * [HTTPSrv](#httpserver.HTTPSrv)
+    * [\_\_init\_\_](#httpserver.HTTPSrv.__init__)
+* [migrate](#migrate)
+  * [Migrate](#migrate.Migrate)
+    * [\_\_init\_\_](#migrate.Migrate.__init__)
+    * [isMigrate](#migrate.Migrate.isMigrate)
+    * [run](#migrate.Migrate.run)
+* [fmod\_db](#fmod_db)
+  * [FModDB](#fmod_db.FModDB)
+    * [\_\_init\_\_](#fmod_db.FModDB.__init__)
 * [postgre](#postgre)
   * [Postgre](#postgre.Postgre)
     * [\_\_init\_\_](#postgre.Postgre.__init__)
-    * [getConnect](#postgre.Postgre.getConnect)
+* [http](#http)
+  * [HTTP](#http.HTTP)
+    * [\_\_init\_\_](#http.HTTP.__init__)
+* [lfs](#lfs)
+  * [LFS](#lfs.LFS)
+    * [rm](#lfs.LFS.rm)
 * [rabbitmq](#rabbitmq)
   * [RabbitMQ](#rabbitmq.RabbitMQ)
     * [\_\_init\_\_](#rabbitmq.RabbitMQ.__init__)
     * [getConnect](#rabbitmq.RabbitMQ.getConnect)
+* [kafka](#kafka)
+  * [Kafka](#kafka.Kafka)
+    * [\_\_init\_\_](#kafka.Kafka.__init__)
+    * [getConnect](#kafka.Kafka.getConnect)
 * [ftp](#ftp)
   * [FTP](#ftp.FTP)
-    * [\_\_init\_\_](#ftp.FTP.__init__)
     * [getConnect](#ftp.FTP.getConnect)
 * [docker](#docker)
   * [Docker](#docker.Docker)
     * [\_\_init\_\_](#docker.Docker.__init__)
-    * [isDocker](#docker.Docker.isDocker)
     * [build](#docker.Docker.build)
     * [status](#docker.Docker.status)
     * [start](#docker.Docker.start)
+    * [restart](#docker.Docker.restart)
     * [stop](#docker.Docker.stop)
     * [remove](#docker.Docker.remove)
     * [logs](#docker.Docker.logs)
     * [run](#docker.Docker.run)
     * [statusWaiting](#docker.Docker.statusWaiting)
+    * [copy](#docker.Docker.copy)
 * [src](#src)
 * [src.fmods](#src.fmods)
   * [FMods](#src.fmods.FMods)
@@ -60,64 +80,75 @@
     * [getTmpFolder](#src.fmods.FMods.getTmpFolder)
     * [startAll](#src.fmods.FMods.startAll)
     * [stopAll](#src.fmods.FMods.stopAll)
+* [src.fmod](#src.fmod)
+  * [FMod](#src.fmod.FMod)
+    * [\_\_init\_\_](#src.fmod.FMod.__init__)
+    * [isDocker](#src.fmod.FMod.isDocker)
 * [src.test](#src.test)
 * [src.test.mysql\_test](#src.test.mysql_test)
 * [src.test.docker\_test](#src.test.docker_test)
+* [src.test.kafka\_test](#src.test.kafka_test)
+* [src.test.http\_test](#src.test.http_test)
 * [src.test.minio\_test](#src.test.minio_test)
 * [src.test.fmods\_test](#src.test.fmods_test)
+* [src.test.rabbitmq\_test](#src.test.rabbitmq_test)
 * [src.test.git\_test](#src.test.git_test)
 * [src.test.postgre\_test](#src.test.postgre_test)
 * [src.test.ftp\_test](#src.test.ftp_test)
 * [src.minio](#src.minio)
   * [MinIO](#src.minio.MinIO)
     * [\_\_init\_\_](#src.minio.MinIO.__init__)
-    * [getConnect](#src.minio.MinIO.getConnect)
 * [src.mysql](#src.mysql)
   * [MySQL](#src.mysql.MySQL)
     * [\_\_init\_\_](#src.mysql.MySQL.__init__)
-    * [getConnect](#src.mysql.MySQL.getConnect)
 * [src.git](#src.git)
   * [GIT](#src.git.GIT)
     * [\_\_init\_\_](#src.git.GIT.__init__)
     * [clone](#src.git.GIT.clone)
+* [src.httpserver](#src.httpserver)
+  * [HTTPSrv](#src.httpserver.HTTPSrv)
+    * [\_\_init\_\_](#src.httpserver.HTTPSrv.__init__)
+* [src.migrate](#src.migrate)
+  * [Migrate](#src.migrate.Migrate)
+    * [\_\_init\_\_](#src.migrate.Migrate.__init__)
+    * [isMigrate](#src.migrate.Migrate.isMigrate)
+    * [run](#src.migrate.Migrate.run)
+* [src.fmod\_db](#src.fmod_db)
+  * [FModDB](#src.fmod_db.FModDB)
+    * [\_\_init\_\_](#src.fmod_db.FModDB.__init__)
 * [src.postgre](#src.postgre)
   * [Postgre](#src.postgre.Postgre)
     * [\_\_init\_\_](#src.postgre.Postgre.__init__)
-    * [getConnect](#src.postgre.Postgre.getConnect)
+* [src.http](#src.http)
+  * [HTTP](#src.http.HTTP)
+    * [\_\_init\_\_](#src.http.HTTP.__init__)
+* [src.lfs](#src.lfs)
+  * [LFS](#src.lfs.LFS)
+    * [rm](#src.lfs.LFS.rm)
 * [src.rabbitmq](#src.rabbitmq)
   * [RabbitMQ](#src.rabbitmq.RabbitMQ)
     * [\_\_init\_\_](#src.rabbitmq.RabbitMQ.__init__)
     * [getConnect](#src.rabbitmq.RabbitMQ.getConnect)
+* [src.kafka](#src.kafka)
+  * [Kafka](#src.kafka.Kafka)
+    * [\_\_init\_\_](#src.kafka.Kafka.__init__)
+    * [getConnect](#src.kafka.Kafka.getConnect)
 * [src.ftp](#src.ftp)
   * [FTP](#src.ftp.FTP)
-    * [\_\_init\_\_](#src.ftp.FTP.__init__)
     * [getConnect](#src.ftp.FTP.getConnect)
 * [src.docker](#src.docker)
   * [Docker](#src.docker.Docker)
     * [\_\_init\_\_](#src.docker.Docker.__init__)
-    * [isDocker](#src.docker.Docker.isDocker)
     * [build](#src.docker.Docker.build)
     * [status](#src.docker.Docker.status)
     * [start](#src.docker.Docker.start)
+    * [restart](#src.docker.Docker.restart)
     * [stop](#src.docker.Docker.stop)
     * [remove](#src.docker.Docker.remove)
     * [logs](#src.docker.Docker.logs)
     * [run](#src.docker.Docker.run)
     * [statusWaiting](#src.docker.Docker.statusWaiting)
-
-<a name="pylint-recursive"></a>
-# pylint-recursive
-
-Module that runs pylint on all python scripts found in a directory tree..
-
-<a name="pylint-recursive.check"></a>
-#### check
-
-```python
-check(cfgDir, module)
-```
-
-apply pylint to the file specified if it is a *.py file
+    * [copy](#src.docker.Docker.copy)
 
 <a name="fmods"></a>
 # fmods
@@ -137,7 +168,7 @@ Class for load and build environment modules for functional tests
 #### \_\_init\_\_
 
 ```python
- | __init__(pathModules, pathTmp, verbose)
+ | __init__(pathModules, pathTmp='', verbose=True)
 ```
 
 Initialising object
@@ -226,6 +257,50 @@ setUp for UTests
 
 tearDown for UTests
 
+<a name="fmod"></a>
+# fmod
+
+Class for work with testing Modules
+
+<a name="fmod.FMod"></a>
+## FMod Objects
+
+```python
+class FMod()
+```
+
+Class for environment module for functional tests
+
+<a name="fmod.FMod.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="fmod.FMod.isDocker"></a>
+#### isDocker
+
+```python
+ | isDocker()
+```
+
+Get parameters of module for docker
+Returns
+-------
+ok
+    success
+
 <a name="minio"></a>
 # minio
 
@@ -235,7 +310,7 @@ Class for work with testing Modules
 ## MinIO Objects
 
 ```python
-class MinIO(object)
+class MinIO(FMod)
 ```
 
 Class for work with Minio
@@ -257,19 +332,6 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="minio.MinIO.getConnect"></a>
-#### getConnect
-
-```python
- | getConnect(moduleName)
-```
-
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
-
 <a name="__init__"></a>
 # \_\_init\_\_
 
@@ -282,7 +344,7 @@ Class for work with testing Modules
 ## MySQL Objects
 
 ```python
-class MySQL(object)
+class MySQL(FModDB)
 ```
 
 Class for work with DB
@@ -304,19 +366,6 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="mysql.MySQL.getConnect"></a>
-#### getConnect
-
-```python
- | getConnect(moduleName)
-```
-
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
-
 <a name="git"></a>
 # git
 
@@ -326,7 +375,7 @@ Class for work with testing Modules
 ## GIT Objects
 
 ```python
-class GIT(object)
+class GIT(FMod)
 ```
 
 Class for load and build environment modules for functional tests
@@ -357,6 +406,121 @@ verbose : bool
 
 Clone git repository
 
+<a name="httpserver"></a>
+# httpserver
+
+Class for work with testing Modules
+
+<a name="httpserver.HTTPSrv"></a>
+## HTTPSrv Objects
+
+```python
+class HTTPSrv(FMod)
+```
+
+Class for work with HTTP (server)
+
+<a name="httpserver.HTTPSrv.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="migrate"></a>
+# migrate
+
+Class for work with testing Modules
+
+<a name="migrate.Migrate"></a>
+## Migrate Objects
+
+```python
+class Migrate(FMod)
+```
+
+Class for load and build environment modules for functional tests
+
+<a name="migrate.Migrate.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="migrate.Migrate.isMigrate"></a>
+#### isMigrate
+
+```python
+ | isMigrate()
+```
+
+Get parameters of module for Migrate
+Returns
+-------
+ok
+    success
+
+<a name="migrate.Migrate.run"></a>
+#### run
+
+```python
+ | run()
+```
+
+Migrate for Database container
+
+<a name="fmod_db"></a>
+# fmod\_db
+
+Class for work with testing Modules
+
+<a name="fmod_db.FModDB"></a>
+## FModDB Objects
+
+```python
+class FModDB(FMod)
+```
+
+Class for environment module for functional tests
+
+<a name="fmod_db.FModDB.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
 <a name="postgre"></a>
 # postgre
 
@@ -366,7 +530,7 @@ Class for work with testing Modules
 ## Postgre Objects
 
 ```python
-class Postgre(object)
+class Postgre(FModDB)
 ```
 
 Class for work with DB
@@ -388,18 +552,60 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="postgre.Postgre.getConnect"></a>
-#### getConnect
+<a name="http"></a>
+# http
+
+Class for work with testing Modules
+
+<a name="http.HTTP"></a>
+## HTTP Objects
 
 ```python
- | getConnect(moduleName)
+class HTTP(FMod)
 ```
 
-Connect to postgresql database
-Attributes
+Class for work with HTTP (client)
+
+<a name="http.HTTP.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
 ----------
-moduleName : str
-    name of module
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="lfs"></a>
+# lfs
+
+Class for work with testing Modules
+
+<a name="lfs.LFS"></a>
+## LFS Objects
+
+```python
+class LFS(object)
+```
+
+Class for load and build environment modules for functional tests
+
+<a name="lfs.LFS.rm"></a>
+#### rm
+
+```python
+ | @staticmethod
+ | rm(pathName)
+```
+
+remove folders
 
 <a name="rabbitmq"></a>
 # rabbitmq
@@ -410,7 +616,7 @@ Class for work with testing Modules
 ## RabbitMQ Objects
 
 ```python
-class RabbitMQ()
+class RabbitMQ(FMod)
 ```
 
 Class for work with RabbitMQ
@@ -436,30 +642,26 @@ verbose : bool
 #### getConnect
 
 ```python
- | getConnect(moduleName)
+ | getConnect()
 ```
 
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
+Connect to rabbitMQ
 
-<a name="ftp"></a>
-# ftp
+<a name="kafka"></a>
+# kafka
 
 Class for work with testing Modules
 
-<a name="ftp.FTP"></a>
-## FTP Objects
+<a name="kafka.Kafka"></a>
+## Kafka Objects
 
 ```python
-class FTP()
+class Kafka(FMod)
 ```
 
-Class for work with FTP
+Class for work with Kafka
 
-<a name="ftp.FTP.__init__"></a>
+<a name="kafka.Kafka.__init__"></a>
 #### \_\_init\_\_
 
 ```python
@@ -476,18 +678,37 @@ pathTmp : str
 verbose : bool
     verbose output
 
+<a name="kafka.Kafka.getConnect"></a>
+#### getConnect
+
+```python
+ | getConnect()
+```
+
+Connect to rabbitMQ
+
+<a name="ftp"></a>
+# ftp
+
+Class for work with testing Modules
+
+<a name="ftp.FTP"></a>
+## FTP Objects
+
+```python
+class FTP(FMod)
+```
+
+Class for work with FTP
+
 <a name="ftp.FTP.getConnect"></a>
 #### getConnect
 
 ```python
- | getConnect(moduleName)
+ | getConnect()
 ```
 
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
+Connect to FTP
 
 <a name="docker"></a>
 # docker
@@ -498,7 +719,7 @@ Class for work with testing Modules
 ## Docker Objects
 
 ```python
-class Docker(object)
+class Docker(FMod)
 ```
 
 Class for load and build environment modules for functional tests
@@ -520,24 +741,11 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="docker.Docker.isDocker"></a>
-#### isDocker
-
-```python
- | isDocker()
-```
-
-Get parameters of module for docker
-Returns
--------
-ok
-    success
-
 <a name="docker.Docker.build"></a>
 #### build
 
 ```python
- | build()
+ | build(rm=True)
 ```
 
 Build docker container of module
@@ -562,6 +770,15 @@ Status docker container of module
 
 ```python
  | start()
+```
+
+Start docker container of module
+
+<a name="docker.Docker.restart"></a>
+#### restart
+
+```python
+ | restart()
 ```
 
 Start docker container of module
@@ -601,14 +818,10 @@ Output logs of docker container of module
 #### run
 
 ```python
- | run()
+ | run(rm=True)
 ```
 
 Run docker container of module
-Parameters
-----------
-moduleName : str
-    name of module
 
 <a name="docker.Docker.statusWaiting"></a>
 #### statusWaiting
@@ -624,6 +837,15 @@ status : str
     status
 timeout : int
     timeout in seconds
+
+<a name="docker.Docker.copy"></a>
+#### copy
+
+```python
+ | copy(src, dstDir)
+```
+
+src shall be an absolute path
 
 <a name="src"></a>
 # src
@@ -646,7 +868,7 @@ Class for load and build environment modules for functional tests
 #### \_\_init\_\_
 
 ```python
- | __init__(pathModules, pathTmp, verbose)
+ | __init__(pathModules, pathTmp='', verbose=True)
 ```
 
 Initialising object
@@ -735,6 +957,50 @@ setUp for UTests
 
 tearDown for UTests
 
+<a name="src.fmod"></a>
+# src.fmod
+
+Class for work with testing Modules
+
+<a name="src.fmod.FMod"></a>
+## FMod Objects
+
+```python
+class FMod()
+```
+
+Class for environment module for functional tests
+
+<a name="src.fmod.FMod.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="src.fmod.FMod.isDocker"></a>
+#### isDocker
+
+```python
+ | isDocker()
+```
+
+Get parameters of module for docker
+Returns
+-------
+ok
+    success
+
 <a name="src.test"></a>
 # src.test
 
@@ -744,11 +1010,20 @@ tearDown for UTests
 <a name="src.test.docker_test"></a>
 # src.test.docker\_test
 
+<a name="src.test.kafka_test"></a>
+# src.test.kafka\_test
+
+<a name="src.test.http_test"></a>
+# src.test.http\_test
+
 <a name="src.test.minio_test"></a>
 # src.test.minio\_test
 
 <a name="src.test.fmods_test"></a>
 # src.test.fmods\_test
+
+<a name="src.test.rabbitmq_test"></a>
+# src.test.rabbitmq\_test
 
 <a name="src.test.git_test"></a>
 # src.test.git\_test
@@ -768,7 +1043,7 @@ Class for work with testing Modules
 ## MinIO Objects
 
 ```python
-class MinIO(object)
+class MinIO(FMod)
 ```
 
 Class for work with Minio
@@ -790,19 +1065,6 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="src.minio.MinIO.getConnect"></a>
-#### getConnect
-
-```python
- | getConnect(moduleName)
-```
-
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
-
 <a name="src.mysql"></a>
 # src.mysql
 
@@ -812,7 +1074,7 @@ Class for work with testing Modules
 ## MySQL Objects
 
 ```python
-class MySQL(object)
+class MySQL(FModDB)
 ```
 
 Class for work with DB
@@ -834,19 +1096,6 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="src.mysql.MySQL.getConnect"></a>
-#### getConnect
-
-```python
- | getConnect(moduleName)
-```
-
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
-
 <a name="src.git"></a>
 # src.git
 
@@ -856,7 +1105,7 @@ Class for work with testing Modules
 ## GIT Objects
 
 ```python
-class GIT(object)
+class GIT(FMod)
 ```
 
 Class for load and build environment modules for functional tests
@@ -887,6 +1136,121 @@ verbose : bool
 
 Clone git repository
 
+<a name="src.httpserver"></a>
+# src.httpserver
+
+Class for work with testing Modules
+
+<a name="src.httpserver.HTTPSrv"></a>
+## HTTPSrv Objects
+
+```python
+class HTTPSrv(FMod)
+```
+
+Class for work with HTTP (server)
+
+<a name="src.httpserver.HTTPSrv.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="src.migrate"></a>
+# src.migrate
+
+Class for work with testing Modules
+
+<a name="src.migrate.Migrate"></a>
+## Migrate Objects
+
+```python
+class Migrate(FMod)
+```
+
+Class for load and build environment modules for functional tests
+
+<a name="src.migrate.Migrate.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="src.migrate.Migrate.isMigrate"></a>
+#### isMigrate
+
+```python
+ | isMigrate()
+```
+
+Get parameters of module for Migrate
+Returns
+-------
+ok
+    success
+
+<a name="src.migrate.Migrate.run"></a>
+#### run
+
+```python
+ | run()
+```
+
+Migrate for Database container
+
+<a name="src.fmod_db"></a>
+# src.fmod\_db
+
+Class for work with testing Modules
+
+<a name="src.fmod_db.FModDB"></a>
+## FModDB Objects
+
+```python
+class FModDB(FMod)
+```
+
+Class for environment module for functional tests
+
+<a name="src.fmod_db.FModDB.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
+----------
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
 <a name="src.postgre"></a>
 # src.postgre
 
@@ -896,7 +1260,7 @@ Class for work with testing Modules
 ## Postgre Objects
 
 ```python
-class Postgre(object)
+class Postgre(FModDB)
 ```
 
 Class for work with DB
@@ -918,18 +1282,60 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="src.postgre.Postgre.getConnect"></a>
-#### getConnect
+<a name="src.http"></a>
+# src.http
+
+Class for work with testing Modules
+
+<a name="src.http.HTTP"></a>
+## HTTP Objects
 
 ```python
- | getConnect(moduleName)
+class HTTP(FMod)
 ```
 
-Connect to postgresql database
-Attributes
+Class for work with HTTP (client)
+
+<a name="src.http.HTTP.__init__"></a>
+#### \_\_init\_\_
+
+```python
+ | __init__(config, pathTmp, verbose)
+```
+
+Initialising object
+Parameters
 ----------
-moduleName : str
-    name of module
+config : dict
+    config of module
+pathTmp : str
+    path to temporary files
+verbose : bool
+    verbose output
+
+<a name="src.lfs"></a>
+# src.lfs
+
+Class for work with testing Modules
+
+<a name="src.lfs.LFS"></a>
+## LFS Objects
+
+```python
+class LFS(object)
+```
+
+Class for load and build environment modules for functional tests
+
+<a name="src.lfs.LFS.rm"></a>
+#### rm
+
+```python
+ | @staticmethod
+ | rm(pathName)
+```
+
+remove folders
 
 <a name="src.rabbitmq"></a>
 # src.rabbitmq
@@ -940,7 +1346,7 @@ Class for work with testing Modules
 ## RabbitMQ Objects
 
 ```python
-class RabbitMQ()
+class RabbitMQ(FMod)
 ```
 
 Class for work with RabbitMQ
@@ -966,30 +1372,26 @@ verbose : bool
 #### getConnect
 
 ```python
- | getConnect(moduleName)
+ | getConnect()
 ```
 
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
+Connect to rabbitMQ
 
-<a name="src.ftp"></a>
-# src.ftp
+<a name="src.kafka"></a>
+# src.kafka
 
 Class for work with testing Modules
 
-<a name="src.ftp.FTP"></a>
-## FTP Objects
+<a name="src.kafka.Kafka"></a>
+## Kafka Objects
 
 ```python
-class FTP()
+class Kafka(FMod)
 ```
 
-Class for work with FTP
+Class for work with Kafka
 
-<a name="src.ftp.FTP.__init__"></a>
+<a name="src.kafka.Kafka.__init__"></a>
 #### \_\_init\_\_
 
 ```python
@@ -1006,18 +1408,37 @@ pathTmp : str
 verbose : bool
     verbose output
 
+<a name="src.kafka.Kafka.getConnect"></a>
+#### getConnect
+
+```python
+ | getConnect()
+```
+
+Connect to rabbitMQ
+
+<a name="src.ftp"></a>
+# src.ftp
+
+Class for work with testing Modules
+
+<a name="src.ftp.FTP"></a>
+## FTP Objects
+
+```python
+class FTP(FMod)
+```
+
+Class for work with FTP
+
 <a name="src.ftp.FTP.getConnect"></a>
 #### getConnect
 
 ```python
- | getConnect(moduleName)
+ | getConnect()
 ```
 
-Connect to postgresql database
-Attributes
-----------
-moduleName : str
-    name of module
+Connect to FTP
 
 <a name="src.docker"></a>
 # src.docker
@@ -1028,7 +1449,7 @@ Class for work with testing Modules
 ## Docker Objects
 
 ```python
-class Docker(object)
+class Docker(FMod)
 ```
 
 Class for load and build environment modules for functional tests
@@ -1050,24 +1471,11 @@ pathTmp : str
 verbose : bool
     verbose output
 
-<a name="src.docker.Docker.isDocker"></a>
-#### isDocker
-
-```python
- | isDocker()
-```
-
-Get parameters of module for docker
-Returns
--------
-ok
-    success
-
 <a name="src.docker.Docker.build"></a>
 #### build
 
 ```python
- | build()
+ | build(rm=True)
 ```
 
 Build docker container of module
@@ -1092,6 +1500,15 @@ Status docker container of module
 
 ```python
  | start()
+```
+
+Start docker container of module
+
+<a name="src.docker.Docker.restart"></a>
+#### restart
+
+```python
+ | restart()
 ```
 
 Start docker container of module
@@ -1131,14 +1548,10 @@ Output logs of docker container of module
 #### run
 
 ```python
- | run()
+ | run(rm=True)
 ```
 
 Run docker container of module
-Parameters
-----------
-moduleName : str
-    name of module
 
 <a name="src.docker.Docker.statusWaiting"></a>
 #### statusWaiting
@@ -1154,4 +1567,13 @@ status : str
     status
 timeout : int
     timeout in seconds
+
+<a name="src.docker.Docker.copy"></a>
+#### copy
+
+```python
+ | copy(src, dstDir)
+```
+
+src shall be an absolute path
 
