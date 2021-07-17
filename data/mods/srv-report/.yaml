@@ -1,0 +1,14 @@
+name: srv-report
+actions:
+  - build
+
+git:
+  src: "https://github.com/Lunkov/srv-report.git"
+  branch: master
+
+docker:
+  name: srv-report-test
+  src: srv-report-test
+
+  dockerfile: Dockerfile
+  buildpath: .

@@ -1,0 +1,27 @@
+name: rabbitmq
+actions:
+  - run
+  - init
+
+docker:
+  name: rabbitmq-test
+  src: rabbitmq:management-alpine
+  ports:
+    - "5672:5672"
+    - "15672:15672"
+  env:
+    - RABBITMQ_DEFAULT_USER: user
+    - RABBITMQ_DEFAULT_PASS: pwd
+    - RABBITMQ_DEFAULT_VHOST: /
+
+
+rabbitmq:
+  url: "amqp://user:pwd@localhost:5672/"
+  user: user
+  password: pwd
+  init:
+    create_channels:
+      - "log3:fanout::log3"
+      - "log1:fanout::log1"
+
+

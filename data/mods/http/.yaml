@@ -1,0 +1,7 @@
+name: http
+actions:
+  - run
+
+http:
+  host: localhost
+  port: 3005

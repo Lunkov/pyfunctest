@@ -16,7 +16,7 @@ class TestPostgre(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('pg'), 'data/tmp/git/pg')
 
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
 
     #config_need = dict(sorted({('CONTAINER_ENV_POSTGRES_DB', 'test-db'), ('ORDER', 0), ('CONTAINER_ENV_POSTGRES_PASSWORD', 'pwd'), ('CONTAINER_ENV_POSTGRES_USER', 'user'), ('CONTAINER_NAME', 'pg-test'), ('DB_PORT', '17432'), ('CONTAINER_PORTS', '17432:5432'), ('CONTAINER_NAME', 'pg-test'), ('CONTAINER_SRC', 'postgres:alpine'), ('DB_NAME', 'test-db'), ('DB_PASSWORD', 'pwd'), ('DB_USER', 'user'), ('NAME', 'pg'), ('TYPE', 'docker')}))
     #cfg = fm.getConfig('pg')

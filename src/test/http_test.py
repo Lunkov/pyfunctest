@@ -15,7 +15,7 @@ class TestHTTP(unittest.TestCase):
     self.assertEqual(fm.count(), 0)
 
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
 
     # Start service
     srvHTTP = fm.newHTTPServer('http')

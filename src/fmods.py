@@ -5,7 +5,8 @@
 import os
 import sys
 import time
-from dotenv import dotenv_values
+import yaml
+
 from .docker import Docker
 from .git import GIT
 from .ftp import FTP
@@ -57,27 +58,32 @@ class FMods(object):
         print("DBG: scan subfolder: %s" % curDir)
       fullPath = os.path.join(self.pathModules, curDir)
       if os.path.isdir(fullPath):
-        config = dotenv_values(os.path.join(fullPath, ".env"))
-        if "NAME" in config:
-          if self.verbose:
-            print("DBG: find mod: %s" % config['NAME'])
-          name = config['NAME']
-          config['MOD_PATH'] = fullPath
-          if not 'ORDER' in config:
-            config['ORDER'] = 0
-          else:
-            config['ORDER'] = int(config['ORDER'])
-          self.modules[name] = set()
-          self.modules[name] = dict(sorted(config.items()))
-        else:
-          if self.verbose:
-            print("WRN: Module not found in %s" % fullPath)
+        with open(os.path.join(fullPath, ".yaml"), 'r') as stream:
+          try:
+            config = yaml.safe_load(stream)
+            if 'name' in config:
+              if self.verbose:
+                print("DBG: find mod: %s" % config['name'])
+              name = config['name']
+              config['mod_path'] = fullPath
+              if not 'order' in config:
+                config['order'] = 0
+              else:
+                config['order'] = int(config['order'])
+              self.modules[name] = set()
+              self.modules[name] = dict(sorted(config.items()))
+            else:
+              if self.verbose:
+                print("WRN: Module not found in %s" % fullPath)
+          except yaml.YAMLError as exc:
+            print("ERR: Bad format in %s: %s" % (fullPath, exc))
+
 
   def printList(self):
     """ Output the list of modules
     """
-    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
-      print("LOG: mod: %s \t (order=%d)" % (s[1]['NAME'], s[1]['ORDER']))
+    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['order']):
+      print("LOG: mod: %s \t (order=%d)" % (s[1]['name'], s[1]['order']))
 
   def count(self):
     """ Count of modules
@@ -108,46 +114,55 @@ class FMods(object):
     return os.path.join(self.pathTmp, 'git', moduleName)
 
   def _gitClone(self, config, moduleName):
-    if 'GIT_SRC' in config:
-      gt = self.newGIT(moduleName)
-      gt.clone()
+    if 'git' in config:
+      if 'src' in config['git']:
+        gt = self.newGIT(moduleName)
+        gt.clone()
 
   def _dockerBuild(self, config, moduleName):
-    if 'DOCKERFILE' in config:
-      srv = self.newDocker(moduleName)
-      srv.build(False)
-      srv.run(False)
-      srv.statusWaiting('running')
+    if 'docker' in config:
+      if 'dockerfile' in config['docker']:
+        srv = self.newDocker(moduleName)
+        srv.build(False)
+        srv.run(False)
+        srv.statusWaiting('running')
 
   def _dockerRun(self, config, moduleName):
-    if 'CONTAINER_SRC' in config:
-      srv = self.newDocker(moduleName)
-      srv.run()
-      srv.statusWaiting('running')
+    if 'docker' in config:
+      if 'src' in config['docker']:
+        srv = self.newDocker(moduleName)
+        srv.run()
+        srv.statusWaiting('running')
 
   def _dockerCompose(self, config, moduleName):
-    if 'CONTAINER_COMPOSE' in config:
-      srv = self.newDocker(moduleName)
-      srv.startCompose()
+    if 'docker' in config:
+      if 'compose' in config['docker']:
+        srv = self.newDocker(moduleName)
+        srv.startCompose()
 
   def _migrate(self, config, moduleName):
-    if 'MIGRATE_COMMAND' in config:
-      migrate = self.newMigrate(moduleName)
-      migrate.run()
+    if 'migrate' in config:
+      if 'command' in config['migrate']:
+        migrate = self.newMigrate(moduleName)
+        migrate.run()
 
   def _init(self, config, moduleName):
-    if 'INIT_RABBITMQ_CREATE_CHANNELS' in config:
-      srv = self.newRabbitMQ(moduleName)
-      srv.init()
-    if 'INIT_KAFKA_CREATE_CHANNELS' in config:
-      srv = self.newKafka(moduleName)
-      srv.init()
-    if 'INIT_MINIO_CREATE_FOLDERS' in config:
-      srv = self.newMinIO(moduleName)
-      srv.init()
-    if 'INIT_FTP_CREATE_FOLDERS' in config:
-      srv = self.newFTP(moduleName)
-      srv.init()
+    if 'rabbitmq' in config:
+      if 'init' in config['rabbitmq']:
+        srv = self.newRabbitMQ(moduleName)
+        srv.init()
+    if 'kafka' in config:
+      if 'init' in config['kafka']:
+        srv = self.newKafka(moduleName)
+        srv.init()
+    if 's3' in config:
+      if 'init' in config['s3']:
+        srv = self.newMinIO(moduleName)
+        srv.init()
+    if 'ftp' in config:
+      if 'init' in config['ftp']:
+        srv = self.newFTP(moduleName)
+        srv.init()
 
   def startAll(self):
     """ setUp for UTests
@@ -160,11 +175,11 @@ class FMods(object):
         'migrate': self._migrate,
         'init': self._init,
     }      
-    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER']):
-      moduleName = s[1]['NAME']
+    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['order']):
+      moduleName = s[1]['name']
       config = s[1]
-      if 'ACTIONS' in config:
-        seq = config['ACTIONS'].split(',')
+      if 'actions' in config:
+        seq = config['actions']
       else:
         seq = ['clone', 'build', 'compose', 'run', 'migrate']
       for s in seq:
@@ -177,15 +192,16 @@ class FMods(object):
     """ tearDown for UTests
     """
     LFS.rm(self.pathTmp)
-    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['ORDER'], reverse=True):
-      moduleName = s[1]['NAME']
+    for s in sorted(self.modules.items(), key=lambda k_v: k_v[1]['order'], reverse=True):
+      moduleName = s[1]['name']
       config = s[1]
-      if 'CONTAINER_SRC' in config:
-        srv = self.newDocker(moduleName)
-        srv.remove()
-      if 'CONTAINER_COMPOSE' in config:
-        srv = self.newDocker(moduleName)
-        srv.stopCompose()
+      if 'docker' in config:
+        if 'src' in config['docker']:
+          srv = self.newDocker(moduleName)
+          srv.remove()
+        if 'compose' in config['docker']:
+          srv = self.newDocker(moduleName)
+          srv.stopCompose()
 
   def newDocker(self, moduleName):
     return Docker(self.getConfig(moduleName), self.getTmpFolder(moduleName), self.verbose)

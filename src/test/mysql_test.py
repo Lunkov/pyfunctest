@@ -16,7 +16,7 @@ class TestMySql(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('mysql'), 'data/tmp/git/mysql')
 
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
 
     #config_need = dict(sorted({('CONTAINER_NAME', 'mysql-test'), ('CONTAINER_ENV_MYSQL_DATABASE', 'test-db'), ('CONTAINER_ENV_MYSQL_PASSWORD', 'pwd'), ('CONTAINER_ENV_MYSQL_ROOT_PASSWORD', 'pwd'), ('CONTAINER_ENV_MYSQL_USER', 'user'), ('CONTAINER_PORTS', '17436:3306'), ('CONTAINER_SRC', 'mysql'), ('DB_NAME', 'test-db'), ('DB_PASSWORD', 'pwd'), ('DB_USER', 'root'), ('NAME', 'mysql'), ('TYPE', 'docker'), ('DB_PORT', '17436')}))
     #cfg = fm.getConfig('mysql')

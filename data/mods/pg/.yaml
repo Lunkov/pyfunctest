@@ -1,0 +1,26 @@
+name: pg
+actions:
+  - run
+  - migrate
+
+docker:
+
+  name: pg-test
+  src: postgres:alpine
+  ports:
+    - "17432:5432"
+  env:
+    - POSTGRES_PASSWORD: pwd
+    - POSTGRES_USER: user
+    - POSTGRES_DB: test-db
+
+db:
+  name: test-db
+  user: user
+  password: pwd
+  port: 17432
+
+migrate:
+  command: --path=/migrations/ --database="postgres://user:pwd@pg-test:5432/test-db?sslmode=disable" up
+  path: migrate
+  timeout_before_migrate: 5

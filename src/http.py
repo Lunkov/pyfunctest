@@ -7,8 +7,9 @@ import sys
 import time
 import requests
 from requests.exceptions import HTTPError
+from .fmod import FMod
 
-class HTTP():
+class HTTP(FMod):
   ''' Class for work with HTTP (client) '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -22,10 +23,8 @@ class HTTP():
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
+    super(HTTP, self).__init__(config, pathTmp, verbose)
+
     self.host = 'localhost'
     if 'HTTP_HOST' in self.config:
       self.host = self.config['HTTP_HOST']

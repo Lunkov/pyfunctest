@@ -11,8 +11,9 @@ from kafka import KafkaProducer
 from kafka import TopicPartition
 from kafka.admin  import KafkaAdminClient, NewTopic
 from kafka.errors import KafkaError
+from .fmod import FMod
 
-class Kafka():
+class Kafka(FMod):
   ''' Class for work with Kafka '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -26,23 +27,22 @@ class Kafka():
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
+    super(Kafka, self).__init__(config, pathTmp, verbose)
+
     self.consumer = None
     self.producer = None
     self.url_in = 'localhost:9092'
     self.url_out = 'localhost:9094'
     self.id_group = 'test'
-    if 'KAFKA_URL_INSIDE' in self.config:
-      self.url_in = self.config['KAFKA_URL_INSIDE']
+    if 'kafka' in self.config:
+      if 'url_inside' in self.config['kafka']:
+        self.url_in = self.config['kafka']['url_inside']
 
-    if 'KAFKA_URL_OUTSIDE' in self.config:
-      self.url_out = self.config['KAFKA_URL_OUTSIDE']
+      if 'url_outside' in self.config['kafka']:
+        self.url_out = self.config['kafka']['url_outside']
 
-    if 'KAFKA_ID_GROUP' in self.config:
-      self.id_group = self.config['KAFKA_ID_GROUP']
+      if 'id_group' in self.config['kafka']:
+        self.id_group = self.config['kafka']['id_group']
   
   def getConnect(self):
     """ Connect to rabbitMQ
@@ -174,7 +174,6 @@ class Kafka():
       if self.verbose:
         print("DBG: Receive from Kafka '%s': topic='%s', msg='%s'" % (self.url_in, topic, message.value))
     except Exception as e:
-      pprint(e)
       print("FATAL: Recieve from Kafka '%s': %s" % (self.url_in, str(e)))
       return '', False
     

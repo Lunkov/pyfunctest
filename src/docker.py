@@ -10,9 +10,10 @@ import subprocess
 import docker
 import tarfile
 
-class Docker(object):
-  ''' Class for load and build environment modules for functional tests '''
+from .fmod import FMod
 
+class Docker(FMod):
+  ''' Class for load and build environment modules for functional tests '''
   def __init__ (self, config, pathTmp, verbose):
     """ Initialising object
     Parameters
@@ -24,15 +25,12 @@ class Docker(object):
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = 'undefined'
-    if 'NAME' in self.config:
-      self.moduleName = self.config['NAME']
+    super(Docker, self).__init__(config, pathTmp, verbose)
+    
     self.networkName = 'test-net'
-    if 'CONTAINER_NETWORK' in self.config:
-      self.networkName = self.config['CONTAINER_NETWORK']
+    if 'docker' in self.config:
+      if 'network' in self.config['docker']:
+        self.networkName = self.config['docker']['network']
     
     try:
       self.docker = docker.from_env()
@@ -47,24 +45,15 @@ class Docker(object):
     try:
       net = self.docker.networks.get(self.networkName)
     except:
-      print("ERR: Docker network(%s) Not Found" % self.networkName)
+      print("ERR: Docker(%s) network(%s) Not Found" % (self.moduleName, self.networkName))
     if net is None:
       self.docker.networks.create(self.networkName, driver="bridge")
     
-    if not 'CONTAINER_NAME' in self.config:
-      print("ERR: getDocker: 'CONTAINER_NAME' Not Found (mod='%s')" %
-             self.moduleName)
-    else:
-      self.containerName = self.config['CONTAINER_NAME']
-
-  def isDocker(self):
-    """ Get parameters of module for docker
-        Returns
-        -------
-        ok
-            success
-    """
-    return ('CONTAINER_NAME' in self.config)
+    if 'docker' in self.config:
+      if 'name' in self.config['docker']:
+        self.containerName = self.config['docker']['name']
+      else:
+        print("ERR: getDocker: 'docker:name' Not Found (mod='%s')" % self.moduleName)
 
   def build(self, rm=True):
     """ Build docker container of module
@@ -81,8 +70,10 @@ class Docker(object):
 
     fpath = os.path.abspath(self.pathTmp)
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
-    dockerfile = os.path.join(fpath, self.config['DOCKERFILE'])
-    buildpath = os.path.join(fpath, self.config['DOCKER_BUILDPATH'])
+    dockerfile = os.path.join(fpath, self.config['docker']['dockerfile'])
+    buildpath = fpath
+    if 'buildpath' in self.config['docker']:
+      buildpath = os.path.join(fpath, self.config['docker']['buildpath'])
 
     if rm:
       self.stop()
@@ -94,7 +85,7 @@ class Docker(object):
         print("DBG: Docker: Build '%s' container: path=%s" % (self.containerName, buildpath))
         print("DBG: Docker: Build '%s' container: Dockerfile=%s" % (self.containerName, dockerfile))
       image, build_logs = self.docker.images.build(path = buildpath, tag=self.containerName, nocache=True, rm=True, forcerm=True, dockerfile=dockerfile)
-      self.config['CONTAINER_SRC'] = self.containerName
+      self.config['docker']['src'] = self.containerName
       if self.verbose:
         for line in build_logs:
           if 'stream' in line:
@@ -149,7 +140,7 @@ class Docker(object):
       container = self.docker.containers.get(self.containerName)
       container.restart()
     except:
-      print("LOG: Docker: Container '%s' Not Found for restarting" % (containerName))
+      print("LOG: Docker: Container '%s' Not Found for restarting" % (self.containerName))
       return False
     return self.statusWaiting('running')
 
@@ -212,65 +203,71 @@ class Docker(object):
       return False
     
     command = None
-    if 'CONTAINER_RUN_COMMAND' in self.config:
-      command = self.config['CONTAINER_RUN_COMMAND']
+    if 'run_command' in self.config['docker']:
+      command = self.config['docker']['run_command']
     
     # Parse Ports
     ports = dict()
-    if 'CONTAINER_PORTS' in self.config:
-      for item in self.config['CONTAINER_PORTS'].split(','):
-        it = item.split(':')
-        if len(it) == 2:
-          ip = it[1].split('-')
-          if len(ip) == 1:
-            ports[it[1]] = it[0]
+    if 'ports' in self.config['docker']:
+      for item in self.config['docker']['ports']:
+        try:
+          it = item.split(':')
+          if len(it) == 2:
+            ip = it[1].split('-')
+            if len(ip) == 1:
+              ports[it[1]] = it[0]
+            else:
+              # Range of ports. Example: 1000-1010:2000-2010
+              p = 0
+              ip2 = it[0].split('-')
+              for i in range(int(ip[0]), int(ip[1])):
+                ports[i] = int(ip2[0]) + p
+                p += 1
           else:
-            # Range of ports. Example: 1000-1010:2000-2010
-            p = 0
-            ip2 = it[0].split('-')
-            for i in range(int(ip[0]), int(ip[1])):
-              ports[i] = int(ip2[0]) + p
-              p += 1
+            print("WRN: Docker: Container '%s': Bad ports '%s'" % (self.containerName, item))
+        except Exception as e:
+          print("ERR: Docker: Container '%s': %s" % (self.containerName, str(e)))
 
     # Parse Env
-    env_const = 'CONTAINER_ENV_'
     envs = dict()
-    for key, value in self.config.items():
-      if env_const in key:
-        k = key.replace(env_const, '')
-        envs[k] = value
+    if 'env' in self.config['docker']:
+      for item in self.config['docker']['env']:
+        for key, value in item.items():
+          envs[key] = value
 
     # Parse Volumes
-    vol_const = 'CONTAINER_VOL_'
     volumes = dict()
-    for key, value in self.config.items():
-      if vol_const in key:
-        it = value.split(':')
-        p = os.path.abspath(it[0])
-        if len(it) > 2:
-          volumes[p] = {'bind': it[1], 'mode': it[2]}
-        else:
-          volumes[p] = {'bind': it[1]}
+    if 'volumes' in self.config['docker']:
+      for item in self.config['docker']['volumes']:
+        if type(item) != 'dict':
+          print("WRN: Docker: Container '%s': Bad volumes '%s'" % (self.containerName, item))
+          continue
+        for key, value in item.items():
+          envs[key] = value
+          it = value.split(':')
+          p = os.path.abspath(it[0])
+          if len(it) > 2:
+            volumes[p] = {'bind': it[1], 'mode': it[2]}
+          else:
+            volumes[p] = {'bind': it[1]}
 
     if rm:
       self.remove()
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
     try:
       print("LOG: Docker: Run '%s' container" % self.containerName)
-      container = self.docker.containers.run(self.config['CONTAINER_SRC'], command=command, network=self.networkName, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
+      container = self.docker.containers.run(self.config['docker']['src'], command=command, network=self.networkName, name=self.containerName, domainname=self.containerName, hostname=self.containerName, ports=ports, environment=envs, volumes=volumes, detach=True)
       self.statusWaiting('running')
 
     except Exception as e:
       print("FATAL: Docker run container '%s': %s" % (self.containerName, str(e)))
       return False
       
-    if 'CONTAINER_PATCH' in self.config:
-      cp = self.config['CONTAINER_PATCH'].split(':')
-      if len(cp) != 2 :
-        print("ERR: Docker: Patch '%s' container: " % (self.containerName, self.config['CONTAINER_PATCH']))
-        return False
-      srcPath = os.path.join(self.config['MOD_PATH'] , cp[0])
-      self.copy(srcPath, cp[1])
+    if 'patch' in self.config['docker']:
+      for item in self.config['docker']['patch']:
+        for path_src, path_dst in item.items():
+          srcPath = os.path.join(self.config['mod_path'] , path_src)
+          self.copy(srcPath, path_dst)
       self.restart()
 
     return True
@@ -317,9 +314,9 @@ class Docker(object):
   def getNameDockerCompose(self, fileName = ''):
     if len(fileName) < 1:
       dcf = 'docker-compose.yml'
-      if 'CONTAINER_COMPOSE' in self.config:
-        dcf = self.config['CONTAINER_COMPOSE']
-      fileName = os.path.join(self.config['MOD_PATH'], dcf)
+      if 'compose' in self.config['docker']:
+        dcf = self.config['docker']['compose']
+      fileName = os.path.join(self.config['mod_path'], dcf)
     return fileName
     
   def runProcess(self, action, cmd, fileName):

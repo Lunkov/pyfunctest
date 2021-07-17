@@ -7,7 +7,7 @@ import sys
 import time
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-
+from .fmod import FMod
 
 class myHTTPServer(SimpleHTTPRequestHandler):
   def _set_response(self):
@@ -31,7 +31,7 @@ class myHTTPServer(SimpleHTTPRequestHandler):
   def do_POST(self):
     self.wfile.write('{"status": "not supported"}'.encode('utf8'))
         
-class HTTPSrv():
+class HTTPSrv(FMod):
   ''' Class for work with HTTP (server) '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -45,10 +45,8 @@ class HTTPSrv():
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
+    super(HTTPSrv, self).__init__(config, pathTmp, verbose)
+    
     self.host = 'localhost'
     self.port = '80'
     if 'HTTP_PORT' in self.config:

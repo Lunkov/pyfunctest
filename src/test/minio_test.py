@@ -17,7 +17,7 @@ class TestMINIO(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('minio'), 'data/tmp/git/minio')
 
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
 
     #config_need = dict(sorted({('CONTAINER_NAME', 'minio-test'), ('CONTAINER_ENV_S3_ACCESS_KEY', 'user'), ('CONTAINER_ENV_S3_SECRET_KEY', 'pwd'), ('CONTAINER_PORTS', '3010:9000'), ('CONTAINER_SRC', 'minio/minio'), ('S3_ACCESS_KEY', 'user'), ('S3_SECRET_KEY', 'pwd'), ('NAME', 'minio'), ('TYPE', 'docker'), ('S3_PORT', '3010')}))
     #cfg = fm.getConfig('minio')

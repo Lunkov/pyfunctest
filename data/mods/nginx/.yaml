@@ -1,0 +1,17 @@
+name: nginx
+order: 10
+actions:
+  - run
+
+docker:
+  name: nginx-test
+  src: nginx
+  ports:
+    - "3010:81"
+
+  env:
+    - NGINX_PORT: 81
+  
+  volumes:
+    - "data/mods/nginx/html/:/usr/share/nginx/html:ro"
+    - "data/mods/nginx/test.conf:/etc/nginx/conf.d/default.conf"

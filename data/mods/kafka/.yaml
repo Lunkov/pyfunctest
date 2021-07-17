@@ -1,0 +1,23 @@
+name: kafka
+order: 1
+actions:
+  - run
+  - init
+
+docker:
+  name: kafka_kafka-test_1
+  compose: docker-compose.yml
+
+  network: test-net
+
+  init:
+    create_channels:
+      - channel-test
+      - channel1-test
+      - channel2-test
+
+kafka:
+  url_inside: "localhost:9092"
+  url_outside: "localhost:9094"
+  id_group: main
+

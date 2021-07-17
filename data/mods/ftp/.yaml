@@ -1,0 +1,30 @@
+name: ftp
+order: 5
+actions:
+  - run
+
+docker:
+  name: ftp-test
+  src: teezily/ftpd
+  ports:
+    - "3021:21"
+    - "35000-35004:35000-35004"
+
+  patch:
+    - start-ftp: /
+  env:
+    - FTP_USER: user
+    - FTP_PASSWORD: pwd
+    - PASV_MIN_PORT: 35000
+    - PASV_MAX_PORT: 35004
+
+ftp:
+  user: user
+  password: pwd
+  port: 3021
+  init:
+    create_folders:
+      - folder-test/folder-test1
+      - folder-test/folder-test2
+      - folder-test1
+

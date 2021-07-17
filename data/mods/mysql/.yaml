@@ -1,0 +1,35 @@
+name: mysql
+order: 2
+actions:
+  - run
+  - migrate
+
+docker:
+  name: mysql-test
+  src: mariadb
+
+  ports:
+    - "17436:3306"
+
+  patch: 
+    - 50-server.cnf: /etc/mysql/mariadb.conf.d/
+
+  env:
+    - MYSQL_ROOT_PASSWORD: pwd
+    - MYSQL_USER: user
+    - MYSQL_PASSWORD: pwd
+    - MYSQL_DATABASE: test-db
+    - ALLOW_EMPTY_PASSWORD: yes
+
+db:
+  name: test-db
+  user: root
+  password: pwd
+  port: 17436
+
+
+migrate:
+  command: "--path=/migrations/ --database=\"mysql://root:pwd@tcp(mysql-test:3306)/test-db\" up"
+  path: migrations
+  timeout_before_migrate: 10
+

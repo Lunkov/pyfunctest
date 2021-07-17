@@ -6,8 +6,9 @@ import os
 import sys
 import time
 import MySQLdb
+from .fmod_db import FModDB
 
-class MySQL(object):
+class MySQL(FModDB):
   ''' Class for work with DB '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -21,28 +22,14 @@ class MySQL(object):
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
-    self.host = '127.0.0.1'
-    if 'DB_HOST' in self.config:
-      self.host = self.config['DB_HOST']
+    super(MySQL, self).__init__(config, pathTmp, verbose)
+
     self.port = 3306
-    if 'DB_PORT' in self.config:
-      self.port = int(self.config['DB_PORT'])
-    self.dbName = 'test-db'
-    if 'DB_NAME' in self.config:
-      self.dbName = self.config['DB_NAME']
     self.user = 'user'
-    if 'DB_USER' in self.config:
-      self.user = self.config['DB_USER']
-    self.password = ''
-    if 'DB_PASSWORD' in self.config:
-      self.password = self.config['DB_PASSWORD']
+
+    self.initConfig()
 
     self.url = "mysql://%s@%s:%d/%s" % (self.user, self.host, self.port, self.dbName)
-    self.handle = None
 
   def reconnect(self):
     self.close()
@@ -75,11 +62,6 @@ class MySQL(object):
       print("DBG: Connected to MySQL '%s'" % (self.url))
     return self.handle
     
-  def close(self):
-    if not self.handle is None:
-      self.handle.close()
-    self.handle = None
-
   def getTableList(self):
     # Retrieve the table list
     s = "SHOW TABLES;"
@@ -93,26 +75,7 @@ class MySQL(object):
       res.sort()
       return res      
     except Exception as e:
-      print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
+      print("FATAL: getTableList DB '%s': %s" % (self.url, str(e)))
     return []
 
-  def loadSQL(self, fileName):
-    try:
-      cursor = self.handle.cursor()
-      sqlFile = open(fileName,'r')
-      cursor.execute(sqlFile.read())
-      return True
-    except Exception as e:
-      print("FATAL: loadSQL DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
-    return False
 
-  def getData(self, sql):
-    # Retrieve the table list
-    try:
-      cursor = self.handle.cursor()
-      # Retrieve all the rows from the cursor
-      cursor.execute(sql)
-      return cursor.fetchall()
-    except Exception as e:
-      print("FATAL: getTableList DB '%s:%s\\%s': %s" % (self.host, self.port, self.config['DB_NAME'], str(e)))
-    return []

@@ -17,7 +17,7 @@ class TestFTP(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('ftp'), 'data/tmp/git/ftp')
 
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
 
     # Start service
     srvFTP = fm.newDocker('ftp')

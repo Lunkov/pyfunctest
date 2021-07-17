@@ -1,0 +1,24 @@
+name: minio
+order: 6
+actions:
+  - run
+  - init
+
+docker:
+  name: minio-test
+  src: minio/minio
+  ports:
+    - "3010:9000"
+
+  run_command: "server /data"
+
+
+s3:
+  access_key: minioadmin
+  secret_key: minioadmin
+  port: 3010
+  init:
+    create_folders:
+      - "bucket-test:folder000"
+      - "bucket-test2:folder1/folder1"
+

@@ -8,8 +8,9 @@ import sys
 import time
 import filecmp
 from minio import Minio
+from .fmod import FMod
 
-class MinIO(object):
+class MinIO(FMod):
   ''' Class for work with Minio '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -23,24 +24,21 @@ class MinIO(object):
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
-    self.handle = None
-    self.host = 'localhost'
-    if 'S3_HOST' in self.config:
-      self.host = self.config['S3_HOST']
-    self.port = '9000'
-    if 'S3_PORT' in self.config:
-      self.port = self.config['S3_PORT']
-    self.url = "%s:%s" % (self.host, self.port)
+    super(MinIO, self).__init__(config, pathTmp, verbose)
+
+    self.port = 9000
     self.access_key = ''
-    if 'S3_ACCESS_KEY' in self.config:
-      self.access_key = self.config['S3_ACCESS_KEY']
     self.secret_key = ''
-    if 'S3_SECRET_KEY' in self.config:
-      self.secret_key = self.config['S3_SECRET_KEY']
+    if 's3' in self.config:
+      if 'host' in self.config['s3']:
+        self.host = self.config['s3']['host']
+      if 'port' in self.config['s3']:
+        self.port = int(self.config['s3']['port'])
+      if 'access_key' in self.config['s3']:
+        self.access_key = self.config['s3']['access_key']
+      if 'secret_key' in self.config['s3']:
+        self.secret_key = self.config['s3']['secret_key']
+    self.url = "%s:%d" % (self.host, self.port)
       
   def reconnect(self):
     self.close()
@@ -68,19 +66,17 @@ class MinIO(object):
       print("DBG: Connected to Minio '%s'" % (self.url))
     return self.handle
 
-  def close(self):
-    if not self.handle is None:
-      self.handle.close()
-    self.handle = None
-
   def init(self):
-    if not 'INIT_MINIO_CREATE_FOLDERS' in self.config:
+    if not 's3' in self.config:
+      return
+    if not 'init' in self.config['s3']:
+      return
+    if not 'create_folders' in self.config['s3']['init']:
       return
     if self.reconnect() is None:
       return
-    folders = self.config['INIT_MINIO_CREATE_FOLDERS']
-    af = folders.split(';')
-    for folder in af:
+    folders = self.config['s3']['init']['create_folders']
+    for folder in folders:
       f = folder.split(':')
       if len(f) == 2:
         self.mkDir(f[0], f[1])    
@@ -97,7 +93,7 @@ class MinIO(object):
     try:
       found = self.handle.bucket_exists(bucketName)
       if not found:
-          self.handle.make_bucket(bucketName)
+        self.handle.make_bucket(bucketName)
       self.handle.fput_object(bucketName, filename, fullPath)
     except Exception as e:
       print("FATAL: uploadFile to Minio(%s): %s" % (self.url, str(e)))

@@ -105,3 +105,26 @@ self.assertTrue(minio.uploadFile('bucket-test', 'test.txt', 'data/files/test.txt
 # Compare local and remote files 
 self.assertTrue(minio.compareFiles('bucket-test', 'test.txt', 'data/files/test.txt'))
 ```
+
+# Test coverage
+
+```
+----------- coverage: platform linux, python 3.8.5-final-0 -----------
+Name                        Stmts   Miss  Cover
+-----------------------------------------------
+src/docker.py                 257     55    79%
+src/fmods.py                  143     13    91%
+src/ftp.py                    255     27    89%
+src/git.py                     17      0   100%
+src/http.py                    66     26    61%
+src/httpserver.py              60     11    82%
+src/kafka.py                  173     38    78%
+src/lfs.py                     30     17    43%
+src/migrate.py                 78     21    73%
+src/minio.py                  127     22    83%
+src/mysql.py                   83      8    90%
+src/postgre.py                 79     11    86%
+src/rabbitmq.py               150     40    73%
+-----------------------------------------------
+TOTAL                        1893    309    84%
+```

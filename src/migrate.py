@@ -6,9 +6,11 @@ import os
 import sys
 import docker
 import git
+import time
 from .lfs import LFS
+from .fmod import FMod
 
-class Migrate(object):
+class Migrate(FMod):
   ''' Class for load and build environment modules for functional tests '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -22,15 +24,12 @@ class Migrate(object):
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = 'undefined'
-    if 'NAME' in self.config:
-      self.moduleName = self.config['NAME']
+    super(Migrate, self).__init__(config, pathTmp, verbose)
+
     self.networkName = 'test-net'
-    if 'CONTAINER_NETWORK' in self.config:
-      self.networkName = self.config['CONTAINER_NETWORK']
+    if 'docker' in self.config:
+      if 'network' in self.config['docker']:
+        self.networkName = self.config['docker']['network']
     
     try:
       self.docker = docker.from_env()
@@ -49,14 +48,18 @@ class Migrate(object):
     if net is None:
       self.docker.networks.create(self.networkName, driver="bridge")
     
-  def isDocker(self):
-    """ Get parameters of module for docker
+  def isMigrate(self):
+    """ Get parameters of module for Migrate
         Returns
         -------
         ok
             success
     """
-    return ('CONTAINER_NAME' in self.config)
+    if 'migrate' in self.config:
+      if 'command' in self.config['migrate']:
+        return True
+    return False
+    
 
   def run(self):
     """ Migrate for Database container
@@ -64,15 +67,15 @@ class Migrate(object):
     if not self.isDocker():
       print("ERR: Docker run: Not Found (mod='%s')" % self.moduleName)
       return False
-    
-    if not 'MIGRATE_COMMAND' in self.config:
+    if not self.isMigrate():
+      print("ERR: Migrate run: Not Found (mod='%s')" % self.moduleName)
       return False
-
-    if 'MIGRATE_GIT_SRC' in self.config:
+    
+    if 'git_src' in self.config['migrate']:
       LFS.rm(self.pathTmp)
       if self.verbose:
-        print("DBG: git.Clone(%s): %s => %s" % (self.moduleName, self.config['MIGRATE_GIT_SRC'], self.pathTmp))
-      repo = git.Repo.clone_from(self.config['MIGRATE_GIT_SRC'], self.pathTmp, branch=self.config['MIGRATE_GIT_BRANCH'])
+        print("DBG: git.Clone(%s): %s => %s" % (self.moduleName, self.config['migrate']['git_src'], self.pathTmp))
+      repo = git.Repo.clone_from(self.config['migrate']['git_src'], self.pathTmp, branch=self.config['migrate']['git_src'])
 
     # image: migrate/migrate
     # command: --path=/migrations/ --database="postgres://user:pwd@db_host:5432/db_name?sslmode=disable" up
@@ -80,22 +83,22 @@ class Migrate(object):
     #  - ./migrations:/migrations
     
     image = 'migrate/migrate'
-    if 'MIGRATE_IMAGE' in self.config:
-      image = self.config['MIGRATE_IMAGE']
+    if 'image' in self.config['migrate']:
+      image = self.config['migrate']['image']
     
-    command = self.config['MIGRATE_COMMAND']
+    command = self.config['migrate']['command']
     
     # Volumes
     volumes = dict()
     vm = self.pathTmp
-    if 'MIGRATE_PATH' in self.config:
-      if 'MIGRATE_GIT_SRC' in self.config:
-        vm = os.path.join(self.pathTmp, self.config['MIGRATE_PATH'])
+    if 'path' in self.config['migrate']:
+      if 'git_src' in self.config['migrate']:
+        vm = os.path.join(self.pathTmp, self.config['migrate']['path'])
       else:
-        vm = os.path.join(self.config['MOD_PATH'], self.config['MIGRATE_PATH'])
+        vm = os.path.join(self.config['mod_path'], self.config['migrate']['path'])
     vmi = '/migrations'
-    if 'MIGRATE_IMAGE_PATH' in self.config:
-      vmi = self.config['MIGRATE_IMAGE_PATH']
+    if 'image_path' in self.config['migrate']:
+      vmi = self.config['migrate']['image_path']
     if not os.path.isdir(vm):
       print("FATAL: Path for migrate is not exists: '%s:%s'" % (self.moduleName, vm))
       return False
@@ -103,6 +106,9 @@ class Migrate(object):
     volumes[vm] = {'bind': vmi, 'mode': 'ro'}
 
     # HELP: https://docker-py.readthedocs.io/en/stable/containers.html
+    if 'timeout_before_migrate' in self.config['migrate']:
+      time.sleep(self.config['migrate']['timeout_before_migrate'])
+    
     result = ''
     try:
       print("LOG: Docker: Run '%s' migrate: %s" % (image, command)) 

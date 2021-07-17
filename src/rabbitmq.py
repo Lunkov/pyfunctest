@@ -7,8 +7,9 @@ import sys
 import time
 import pika
 import filecmp
+from .fmod import FMod
 
-class RabbitMQ():
+class RabbitMQ(FMod):
   ''' Class for work with RabbitMQ '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -22,15 +23,14 @@ class RabbitMQ():
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
+    super(RabbitMQ, self).__init__(config, pathTmp, verbose)
+
     self.connect = None
     self.channel = None
     self.url = 'amqp://localhost'
-    if 'RABBITMQ_URL' in self.config:
-      self.url = self.config['RABBITMQ_URL']
+    if 'rabbitmq' in self.config:
+      if 'url' in self.config['rabbitmq']:
+        self.url = self.config['rabbitmq']['url']
     self.rmq_parameters = pika.URLParameters(self.url)
       
   def getConnect(self):
@@ -91,11 +91,14 @@ class RabbitMQ():
     self.channel = None
 
   def init(self):
-    if not 'INIT_RABBITMQ_CREATE_CHANNELS' in self.config:
+    if not 'rabbitmq' in self.config:
       return
-    channels = self.config['INIT_RABBITMQ_CREATE_CHANNELS']
-    achs = channels.split(';')
-    for channel in achs:
+    if not 'init' in self.config['rabbitmq']:
+      return
+    if not 'create_channels' in self.config['rabbitmq']['init']:
+      return
+    channels = self.config['rabbitmq']['init']['create_channels']
+    for channel in channels:
       ch = channel.split(':')
       if len(ch) == 4:
         self.createRoute(ch[0], ch[1], ch[2], ch[3])

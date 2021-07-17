@@ -7,13 +7,13 @@ from src.fmods import FMods
 
 class TestGIT(unittest.TestCase):
 
-  def testClone(self):
+  def testGitClone(self):
     fm = FMods('data/mods/')
 		
     self.assertEqual(fm.count(), 0)
     
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
    
     # Test: Docker build
     srvGit = fm.newGIT('srv-report')

@@ -18,7 +18,7 @@ class TestRabbitMQ(unittest.TestCase):
     self.assertEqual(fm.getTmpFolder('rabbitmq'), 'data/tmp/git/rabbitmq')
 
     fm.scan()
-    self.assertTrue(fm.count() > 7)
+    self.assertTrue(fm.count() > 1)
 
     rabbitmq1 = fm.newRabbitMQ('rabbitmq')
     

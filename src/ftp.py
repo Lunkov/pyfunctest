@@ -9,7 +9,8 @@ import ftplib
 import filecmp
 import socket
 import errno
-import pprint
+
+from .fmod import FMod
 
 class CustomFTP(ftplib.FTP):
 
@@ -24,42 +25,25 @@ class CustomFTP(ftplib.FTP):
       host = self.host
     return host, port
 
-class FTP():
+class FTP(FMod):
   ''' Class for work with FTP '''
 
   def __init__ (self, config, pathTmp, verbose):
-    """ Initialising object
-    Parameters
-    ----------
-    config : dict
-        config of module
-    pathTmp : str
-        path to temporary files
-    verbose : bool
-        verbose output
-    """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
-    self.host = 'localhost'
-    if 'FTP_HOST' in self.config:
-      self.host = self.config['FTP_HOST']
-    self.port = '21'
-    if 'FTP_PORT' in self.config:
-      self.port = self.config['FTP_PORT']
-    self.port = int(self.port)
+    super(FTP, self).__init__(config, pathTmp, verbose)
 
-    self.user = ''
-    if 'FTP_USER' in self.config:
-      self.user = self.config['FTP_USER']
-    self.password = ''
-    if 'FTP_PASSWORD' in self.config:
-      self.password = self.config['FTP_PASSWORD']
+    self.port = 21
+    if 'ftp' in self.config:
+      if 'host' in self.config['ftp']:
+        self.host = self.config['ftp']['host']
+      if 'port' in self.config['ftp']:
+        self.port = int(self.config['ftp']['port'])
+
+      if 'user' in self.config['ftp']:
+        self.user = self.config['ftp']['user']
+      if 'password' in self.config['ftp']:
+        self.password = self.config['ftp']['password']
 
     self.url = "ftp://%s@%s:%d" % (self.user, self.host, self.port)
-
-    self.handle = None
   
   def getConnect(self):
     """ Connect to FTP
@@ -94,11 +78,6 @@ class FTP():
       print("DBG: Connected to FTP '%s': %s" % (self.url, self.handle.getwelcome()))
     return self.handle
     
-  def close(self):
-    if not self.handle is None:
-      self.handle.close()
-    self.handle = None
-
   def getDirList(self, currentDir):
     res = []
     timeout = 15
@@ -163,11 +142,14 @@ class FTP():
     return res
 
   def init(self):
-    if not 'INIT_FTP_CREATE_FOLDERS' in self.config:
+    if not 'init' in self.config['ftp']:
       return
-    folders = self.config['INIT_FTP_CREATE_FOLDERS']
-    af = folders.split(';')
-    for folder in af:
+    if not 'create_folders' in self.config['ftp']['init']:
+      return
+    if self.verbose:
+      print("DBG: Init FTP '%s'" % (self.url))
+    folders = self.config['ftp']['init']['create_folders']
+    for folder in folders:
       self.mkDir(folder)
 
   def cd(self, currentDir):
@@ -199,7 +181,6 @@ class FTP():
           elapsed_time += timeout
         except Exception as e:
           print("ERR: Change Directory(%s/%s): %s" % (self.url, currentDir, str(e)))
-          pprint.pprint(e)
 
     res = self.handle.pwd() == currentDir
     self.handle.cwd('/')

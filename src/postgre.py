@@ -6,8 +6,9 @@ import os
 import sys
 import time
 import psycopg2
+from .fmod_db import FModDB
 
-class Postgre(object):
+class Postgre(FModDB):
   ''' Class for work with DB '''
 
   def __init__ (self, config, pathTmp, verbose):
@@ -21,28 +22,15 @@ class Postgre(object):
     verbose : bool
         verbose output
     """
-    self.verbose = verbose
-    self.config = config
-    self.pathTmp = pathTmp
-    self.moduleName = self.config['NAME']
-    self.host = 'localhost'
-    if 'DB_HOST' in self.config:
-      self.host = self.config['DB_HOST']
-    self.port = '5432'
-    if 'DB_PORT' in self.config:
-      self.port = self.config['DB_PORT']
-    self.dbName = 'test-db'
-    if 'DB_NAME' in self.config:
-      self.dbName = self.config['DB_NAME']
-    self.user = 'user'
-    if 'DB_USER' in self.config:
-      self.user = self.config['DB_USER']
-    self.password = ''
-    if 'DB_PASSWORD' in self.config:
-      self.password = self.config['DB_PASSWORD']
+    super(Postgre, self).__init__(config, pathTmp, verbose)
 
-    self.url = "pg://%s@%s:%s/%s" % (self.user, self.host, self.port, self.dbName)
-    self.handle = None
+    self.user = 'user'
+    self.port = 5432
+    self.dbName = 'test-db'
+
+    self.initConfig()
+
+    self.url = "pg://%s@%s:%d/%s" % (self.user, self.host, self.port, self.dbName)
   
   
   def reconnect(self):
@@ -75,11 +63,6 @@ class Postgre(object):
       print("DBG: Connected to PostgreSQL '%s'" % (self.url))
     return self.handle
     
-  def close(self):
-    if not self.handle is None:
-      self.handle.close()
-    self.handle = None
-    
   def getTableList(self, schema = 'public'):
     # Retrieve the table list
     s = "SELECT table_schema, table_name FROM information_schema.tables WHERE (table_schema = '%s') ORDER BY table_schema, table_name;" % schema
@@ -92,23 +75,3 @@ class Postgre(object):
       print("FATAL: getTableList DB '%s': %s" % (self.url, str(e)))
     return []
 
-  def loadSQL(self, fileName):
-    try:
-      cursor = self.handle.cursor()
-      sqlFile = open(fileName,'r')
-      cursor.execute(sqlFile.read())
-      return True
-    except Exception as e:
-      print("FATAL: loadSQL DB '%s': %s" % (self.url, str(e)))
-    return False
-
-  def getData(self, sql, schema = 'public'):
-    # Retrieve the table list
-    try:
-      cursor = self.handle.cursor()
-      # Retrieve all the rows from the cursor
-      cursor.execute(sql)
-      return cursor.fetchall()
-    except Exception as e:
-      print("FATAL: getTableList DB '%s': %s" % (self.url, str(e)))
-    return []
