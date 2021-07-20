@@ -9,6 +9,12 @@ Functional сapabilities:
 4. Write and read data from mySQL, MariaDB, PostgreSQL
 5. Write and read files from FTP, MinIO
 
+Additional:
+1. You can create folders before running tests for FTP, MinIO
+2. You can migrate structure and data before running tests for databases
+3. You can replace configuration and other files inside container before work
+4. You can run docker services in a specific sequence before running tests
+
 ## Install
 
 ```
