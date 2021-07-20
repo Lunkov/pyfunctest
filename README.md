@@ -32,14 +32,58 @@ pip3 install --upgrade git+https://github.com/Lunkov/fmods.git
 ## Settings of modules
 
 The main module is FMods. Its constructor has three parameters: path to settings, path to template folder and verbose.
+The example of structure settings: https://github.com/Lunkov/fmods/tree/master/data/mods
+
+The example commands for tests
 
 ```
-# New object of settings of modules
-fm = FMods("mods/", "tmp/", True)
+import unittest
 
-# Read settings
-fm.scan()
+class TestServices(unittest.TestCase):
+
+  def setUp(self):
+	# New object of settings of modules
+	self.fm = FMods("mods/", "tmp/", True)
+
+	# Read settings
+	self.fm.scan()
+
+	# Run all containers
+	self.fm.startAll()
+
+  def testReceiveMessage(self):
+	# New object of RabbitMQ Client
+	rabbitmq = self.fm.newRabbitMQ('rabbitmq')
+
+	# Create routes
+    queue = 'log3'
+    exchange = 'log3'
+    routing_key = ''
+    exchange_type = 'fanout'	
+	self.assertTrue(rabbitmq.createRoute(exchange, exchange_type, routing_key, queue))
+
+	# Send message
+	self.assertTrue(rabbitmq.send(exchange, routing_key, 'message 1'))    
+
+	# New object of PostgreSQL Client
+	pg = self.fm.newPostgre('pg')
+
+	# Check structure of database
+	self.assertEqual(pg.getTableList(), [('public', 'messages')])
+
+	# Get and check data from table
+	self.assertEqual(pg.getData('select * from public.messages'), [(1, 'message 1')])
+
+  
+  def tearDown(self):
+    # Stop all containers
+    self.fm.stopAll()
+
+if __name__ == '__main__':
+  unittest.main()
 ```
+
+
 ## Docker
 
 ### Build container
