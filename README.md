@@ -60,19 +60,19 @@ class TestServices(unittest.TestCase):
     exchange = 'log3'
     routing_key = ''
     exchange_type = 'fanout'	
-	self.assertTrue(rabbitmq.createRoute(exchange, exchange_type, routing_key, queue))
+    self.assertTrue(rabbitmq.createRoute(exchange, exchange_type, routing_key, queue))
 
-	# Send message
-	self.assertTrue(rabbitmq.send(exchange, routing_key, 'message 1'))    
+    # Send message
+    self.assertTrue(rabbitmq.send(exchange, routing_key, 'message 1'))    
 
-	# New object of PostgreSQL Client
-	pg = self.fm.newPostgre('pg')
+    # New object of PostgreSQL Client
+    pg = self.fm.newPostgre('pg')
 
-	# Check structure of database
-	self.assertEqual(pg.getTableList(), [('public', 'messages')])
+    # Check structure of database
+    self.assertEqual(pg.getTableList(), [('public', 'messages')])
 
-	# Get and check data from table
-	self.assertEqual(pg.getData('select * from public.messages'), [(1, 'message 1')])
+    # Get and check data from table
+    self.assertEqual(pg.getData('select * from public.messages'), [(1, 'message 1')])
 
   
   def tearDown(self):
