@@ -7,7 +7,7 @@ Functional сapabilities:
 2. Create, start and stop containers
 3. Send and receive messages from Kafka, RabbitMQ
 4. Write and read data from mySQL, MariaDB, PostgreSQL
-5. Write and read data from FTP, MinIO
+5. Write and read files from FTP, MinIO
 
 ## Install
 
@@ -33,6 +33,141 @@ fm = FMods("mods/", "tmp/", True)
 
 # Read settings
 fm.scan()
+```
+## Docker
+
+### Build container
+
+Example file .yaml
+```
+name: srv-report
+actions:
+  - build
+
+git:
+  src: "https://github.com/Lunkov/srv-report.git"
+  branch: master
+
+docker:
+  name: srv-report-test
+  src: srv-report-test
+
+  dockerfile: Dockerfile
+  buildpath: .
+```
+
+Commands for tests
+```
+# New object of settings of modules
+fm = FMods("mods/", "tmp/", True)
+
+# Read settings
+fm.scan()
+
+# Get module
+srvDocker = fm.newDocker('srv-report')
+
+# Container must have status: not found
+self.assertTrue(srvDocker.statusWaiting('not found'))
+
+# Build container
+self.assertTrue(srvDocker.build())
+
+# Run container
+self.assertTrue(srvDocker.run())
+
+```
+
+### Start container
+
+Example file .yaml
+```
+name: nginx
+order: 10
+actions:
+  - run
+
+docker:
+  name: nginx-test
+  src: nginx
+  ports:
+    - "3010:81"
+
+  env:
+    - NGINX_PORT: 81
+  
+  volumes:
+    - "data/mods/nginx/html/:/usr/share/nginx/html:ro"
+    - "data/mods/nginx/test.conf:/etc/nginx/conf.d/default.conf"
+```
+
+Commands for tests
+```
+# New object of settings of modules
+fm = FMods("mods/", "tmp/", True)
+
+# Read settings
+fm.scan()
+
+# Get module
+srvNginx = fm.newDocker('nginx')
+
+# Run container
+self.assertTrue(srvNginx.run())
+
+# Container must have status: running
+self.assertEqual(srvNginx.status(), 'running')
+
+```
+
+### Start compose
+
+Example file .yaml
+```
+name: kafka
+order: 1
+actions:
+  - run
+  - init
+
+docker:
+  name: kafka_kafka-test_1
+  compose: docker-compose.yml
+
+  network: test-net
+
+  init:
+    create_channels:
+      - channel-test
+      - channel1-test
+      - channel2-test
+
+kafka:
+  url_inside: "localhost:9092"
+  url_outside: "localhost:9094"
+  id_group: main
+```
+
+Commands for tests
+```
+# New object of settings of modules
+fm = FMods("mods/", "tmp/", True)
+
+# Read settings
+fm.scan()
+
+# Get module
+srvDocker = fm.newDocker('kafka') # Docker Compose
+
+# Run container
+self.assertTrue(srvDocker.startCompose())
+
+# Container must have status: running
+self.assertEqual(srvDocker.status(), 'running')
+
+# Stop container
+self.assertTrue(srvDocker.stopCompose())
+
 ```
 
 
@@ -68,6 +203,7 @@ ftp:
   password: pwd
   port: 3021
   init:
+    # You can create folders before running tests
     create_folders:
       - folder-test/folder-test1
       - folder-test/folder-test2
@@ -117,6 +253,7 @@ s3:
   secret_key: minioadmin
   port: 3010
   init:
+    # You can create folders before running tests
     create_folders:
       - "bucket-test:folder000"
       - "bucket-test2:folder1/folder1"
@@ -157,6 +294,7 @@ docker:
   ports:
     - "17436:3306"
 
+  # You can replace configuration file inside container before work
   patch: 
     - 50-server.cnf: /etc/mysql/mariadb.conf.d/
 
@@ -173,7 +311,7 @@ db:
   password: pwd
   port: 17436
 
-
+# You can migrate your data before tests
 migrate:
   command: "--path=/migrations/ --database=\"mysql://root:pwd@tcp(mysql-test:3306)/test-db\" up"
   path: migrations
@@ -181,6 +319,8 @@ migrate:
 ```
 
 ### Testing
+
+Commands for tests
 ```
 # New object of mySQL Client
 msql = fm.newMySQL('mysql')
@@ -252,6 +392,113 @@ self.assertEqual(pg.getData('select * from public.article'), [(1, 'article 1', '
 
 ```
 
+## RabbitMQ
+
+### Settings
+
+Example file .yaml
+```
+name: rabbitmq
+actions:
+  - run
+  - init
+
+docker:
+  name: rabbitmq-test
+  src: rabbitmq:management-alpine
+  ports:
+    - "5672:5672"
+    - "15672:15672"
+  env:
+    - RABBITMQ_DEFAULT_USER: user
+    - RABBITMQ_DEFAULT_PASS: pwd
+    - RABBITMQ_DEFAULT_VHOST: /
+
+
+rabbitmq:
+  url: "amqp://user:pwd@localhost:5672/"
+  user: user
+  password: pwd
+  init:
+    # You can create channels before running tests
+    create_channels:
+      - "log3:fanout::log3"
+      - "log1:fanout::log1"
+```
+
+### Testing
+```
+# New object of RabbitMQ Client
+rabbitmq = fm.newRabbitMQ('rabbitmq')
+
+# Create routes
+self.assertTrue(rabbitmq.createRoute(exchange, exchange_type, routing_key, queue))
+
+# Send message
+self.assertTrue(rabbitmq.send(exchange, routing_key, 'message 1'))
+
+# Recieve message
+msg, ok = rabbitmq.receive(queue)
+self.assertTrue(ok)
+self.assertEqual(msg, 'message 1')
+
+# Send file
+self.assertTrue(rabbitmq.sendFile(exchange, routing_key, 'data/files/test.txt'))
+
+# Recieve and compare file
+self.assertTrue(rabbitmq.receiveAndCompareFile(queue, 'data/files/test.txt'))
+```
+
+## Kafka
+
+### Settings
+
+Example file .yaml
+```
+name: kafka
+order: 1
+actions:
+  - run
+  - init
+
+docker:
+  name: kafka_kafka-test_1
+  compose: docker-compose.yml
+
+  network: test-net
+
+  init:
+    # You can create channels before running tests
+    create_channels:
+      - channel-test
+      - channel1-test
+      - channel2-test
+
+kafka:
+  url_inside: "localhost:9092"
+  url_outside: "localhost:9094"
+  id_group: main
+```
+
+### Testing
+```
+# New object of Kafka Client
+kafka = fm.newKafka('kafka')
+
+# Send message
+self.assertTrue(kafka.send(channel, 'message 1'))
+
+# Recieve message
+msg, ok = kafka.receive(channel)
+self.assertTrue(ok)
+self.assertEqual(msg, 'message 1')
+
+# Send file
+self.assertTrue(kafka.sendFile(channel, 'data/files/test.txt'))
+
+# Recieve and compare file
+self.assertTrue(kafka.receiveAndCompareFile(channel, 'data/files/test.txt'))
+```
 
 # Additional information
 
