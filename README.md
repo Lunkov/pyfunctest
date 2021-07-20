@@ -42,20 +42,20 @@ import unittest
 class TestServices(unittest.TestCase):
 
   def setUp(self):
-	# New object of settings of modules
-	self.fm = FMods("mods/", "tmp/", True)
+    # New object of settings of modules
+    self.fm = FMods("mods/", "tmp/", True)
 
-	# Read settings
-	self.fm.scan()
+    # Read settings
+    self.fm.scan()
 
-	# Run all containers
-	self.fm.startAll()
+    # Run all containers
+    self.fm.startAll()
 
   def testReceiveMessage(self):
-	# New object of RabbitMQ Client
-	rabbitmq = self.fm.newRabbitMQ('rabbitmq')
+    # New object of RabbitMQ Client
+    rabbitmq = self.fm.newRabbitMQ('rabbitmq')
 
-	# Create routes
+    # Create routes
     queue = 'log3'
     exchange = 'log3'
     routing_key = ''
