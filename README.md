@@ -18,13 +18,13 @@ Additional:
 ## Install
 
 ```
-pip3 install git+https://github.com/Lunkov/fmods.git
+pip3 install git+https://github.com/Lunkov/pyfunctest.git
 ```
 
 ## Upgrade
 
 ```
-pip3 install --upgrade git+https://github.com/Lunkov/fmods.git
+pip3 install --upgrade git+https://github.com/Lunkov/pyfunctest.git
 ```
 
 # How it works 
@@ -32,7 +32,7 @@ pip3 install --upgrade git+https://github.com/Lunkov/fmods.git
 ## Settings of modules
 
 The main module is FMods. Its constructor has three parameters: path to settings, path to template folder and verbose.
-The example of structure settings: https://github.com/Lunkov/fmods/tree/master/data/mods
+The example of structure settings: https://github.com/Lunkov/pyfunctest/tree/master/data/mods
 
 The example commands for tests
 
@@ -569,7 +569,7 @@ sudo pytest-3 -s
 ### Build documentation
 
 ```
-pydoc-markdown --render-toc --py3 --verbose > fmods.md
+pydoc-markdown --render-toc --py3 --verbose > pyfunctest.md
 ```
 
 ## Test coverage

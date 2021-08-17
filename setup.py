@@ -3,12 +3,12 @@
 from setuptools import setup, find_packages
 
 setup(
-  name='fmods',
+  name='pyfunctest',
   version='0.0.5',
   license="MIT",
   author="Sergey Lunkov",
-  package_dir={'fmods': 'src'},
-  packages=['fmods'],
+  package_dir={'pyfunctest': 'src'},
+  packages=['pyfunctest'],
   install_requires=[
     "gitpython",
     "python-dotenv",
