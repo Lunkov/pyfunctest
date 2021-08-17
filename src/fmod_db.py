@@ -28,11 +28,11 @@ class FModDB(FMod):
       return
     
     if 'host' in self.config['db']:
-      self.host = self.config['db']['DB_HOST']
+      self.host = self.config['db']['host']
     if 'port' in self.config['db']:
       self.port = int(self.config['db']['port'])
-    if 'db_name' in self.config['db']:
-      self.dbName = self.config['db']['db_name']
+    if 'name' in self.config['db']:
+      self.dbName = self.config['db']['name']
     if 'user' in self.config['db']:
       self.user = self.config['db']['user']
     if 'password' in self.config['db']:

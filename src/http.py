@@ -25,13 +25,11 @@ class HTTP(FMod):
     """
     super(HTTP, self).__init__(config, pathTmp, verbose)
 
-    self.host = 'localhost'
-    if 'HTTP_HOST' in self.config:
-      self.host = self.config['HTTP_HOST']
-    self.port = '80'
-    if 'HTTP_PORT' in self.config:
-      self.port = self.config['HTTP_PORT']
-    self.port = int(self.port)
+    if 'http' in self.config:
+      if 'host' in self.config['http']:
+        self.host = self.config['http']['host']
+      if 'port' in self.config['http']:
+        self.port = int(self.config['http']['port'])
 
     self.url = "http://%s:%d" % (self.host, self.port)
 
