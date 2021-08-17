@@ -1,4 +1,4 @@
-# FMods
+# pyFuncTest
 
 The framework for functional testing of microservices
 
