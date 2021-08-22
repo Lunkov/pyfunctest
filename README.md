@@ -15,21 +15,49 @@ Additional:
 3. You can replace configuration and other files inside container before work
 4. You can run docker services in a specific sequence before running tests
 
-## Install
+# Table of Contents
+
+* [Install](#install)
+* [How it works ](#itworks)
+  * [Settings of modules](#settings)
+  * [Docker](#docker)
+    * [Build container](#docker-build)
+    * [Start container](#docker-start)
+    * [Start compose](#docker-start-compose)
+  * [FTP](#ftp)
+    * [Settings](#ftp-settings)
+    * [Testing](#ftp-testing)
+  * [Minio](#minio)
+    * [Settings](#minio-settings)
+    * [Testing](#minio-testing)
+  * [MySQL](#mysql)
+    * [Settings](#mysql-settings)
+    * [Testing](#mysql-testing)
+  * [PostgreSQL](#mysql)
+    * [Settings](#postgresql-settings)
+    * [Testing](#postgresql-testing)
+  * [RabbitMQ](#rabbitmq)
+    * [Settings](#rabbitmq-settings)
+    * [Testing](#rabbitmq-testing)
+  * [Kafka](#kafka)
+    * [Settings](#kafka-settings)
+    * [Testing](#kafka-testing)
+
+## Install<a name="install"></a>
 
 ```
-pip3 install git+https://github.com/Lunkov/pyfunctest.git
+pip3 install pyfunctest
 ```
 
-## Upgrade
+Upgrade
 
 ```
-pip3 install --upgrade git+https://github.com/Lunkov/pyfunctest.git
+pip3 install --upgrade pyfunctest
 ```
 
-# How it works 
+# How it works<a name="itworks"></a>
 
-## Settings of modules
+## Settings of modules<a name="settings"></a>
 
 The main module is FMods. Its constructor has three parameters: path to settings, path to template folder and verbose.
 The example of structure settings: https://github.com/Lunkov/pyfunctest/tree/master/data/mods
@@ -84,9 +112,9 @@ if __name__ == '__main__':
 ```
 
 
-## Docker
+## Docker<a name="docker"></a>
 
-### Build container
+### Build container<a name="docker-build"></a>
 
 Example file .yaml
 ```
@@ -128,7 +156,7 @@ self.assertTrue(srvDocker.run())
 
 ```
 
-### Start container
+### Start container<a name="docker-start"></a>
 
 Example file .yaml
 ```
@@ -170,7 +198,7 @@ self.assertEqual(srvNginx.status(), 'running')
 
 ```
 
-### Start compose
+### Start compose<a name="docker-start-compose"></a>
 
 Example file .yaml
 ```
@@ -221,9 +249,9 @@ self.assertTrue(srvDocker.stopCompose())
 ```
 
 
-## FTP
+## FTP<a name="ftp"></a>
 
-### Settings
+### Settings<a name="ftp-settings"></a>
 
 
 Example file .yaml
@@ -261,7 +289,7 @@ ftp:
 
 ```
 
-### Testing
+### Testing<a name="ftp-testing"></a>
 
 ```
 # New object of FTP Client
@@ -277,9 +305,9 @@ self.assertTrue(ftp.uploadFile('folder-test', 'test.txt', 'data/files/test.txt')
 self.assertTrue(ftp.compareFiles('folder-test', 'test.txt', 'data/files/test.txt'))
 ```
 
-## Minio
+## Minio<a name="minio"></a>
 
-### Settings
+### Settings<a name="minio-settings"></a>
 
 Example file .yaml
 ```
@@ -309,7 +337,7 @@ s3:
       - "bucket-test2:folder1/folder1"
 ```
 
-### Testing
+### Testing<a name="minio-testing"></a>
 ```
 # New object of Minio Client
 minio = fm.newMinIO('minio')
@@ -325,9 +353,9 @@ self.assertTrue(minio.compareFiles('bucket-test', 'test.txt', 'data/files/test.t
 ```
 
 
-## MySQL
+## MySQL<a name="mysql"></a>
 
-### Settings
+### Settings<a name="mysql-settings"></a>
 
 Example file .yaml
 ```
@@ -368,7 +396,7 @@ migrate:
   timeout_before_migrate: 10
 ```
 
-### Testing
+### Testing<a name="mysql-testing"></a>
 
 Commands for tests
 ```
@@ -389,9 +417,9 @@ self.assertEqual(msql.getData('select * from article'), ((1, 'article 1', 'descr
 
 ```
 
-## PostgreSQL
+## PostgreSQL<a name="postgresql"></a>
 
-### Settings
+### Settings<a name="postgresql-settings"></a>
 
 Example file .yaml
 ```
@@ -423,7 +451,7 @@ migrate:
   timeout_before_migrate: 5
 ```
 
-### Testing
+### Testing<a name="postgresql-testing"></a>
 ```
 # New object of PostgreSQL Client
 pg = fm.newPostgre('pg')
@@ -442,9 +470,9 @@ self.assertEqual(pg.getData('select * from public.article'), [(1, 'article 1', '
 
 ```
 
-## RabbitMQ
+## RabbitMQ<a name="rabbitmq"></a>
 
-### Settings
+### Settings<a name="rabbitmq-settings"></a>
 
 Example file .yaml
 ```
@@ -476,7 +504,7 @@ rabbitmq:
       - "log1:fanout::log1"
 ```
 
-### Testing
+### Testing<a name="rabbitmq-testing"></a>
 ```
 # New object of RabbitMQ Client
 rabbitmq = fm.newRabbitMQ('rabbitmq')
@@ -499,9 +527,9 @@ self.assertTrue(rabbitmq.sendFile(exchange, routing_key, 'data/files/test.txt'))
 self.assertTrue(rabbitmq.receiveAndCompareFile(queue, 'data/files/test.txt'))
 ```
 
-## Kafka
+## Kafka<a name="kafka"></a>
 
-### Settings
+### Settings<a name="kafka-settings"></a>
 
 Example file .yaml
 ```
@@ -530,7 +558,7 @@ kafka:
   id_group: main
 ```
 
-### Testing
+### Testing<a name="kafka-testing"></a>
 ```
 # New object of Kafka Client
 kafka = fm.newKafka('kafka')
@@ -548,62 +576,5 @@ self.assertTrue(kafka.sendFile(channel, 'data/files/test.txt'))
 
 # Recieve and compare file
 self.assertTrue(kafka.receiveAndCompareFile(channel, 'data/files/test.txt'))
-```
-
-# Additional information
-
-## Testing
-
-### Prepare
-```
-sudo apt install python3-pytest
-```
-
-### Run tests
-```
-sudo pytest-3 -s
-```
-
-## Builds
-
-### Build documentation
-
-```
-pydoc-markdown --render-toc --py3 --verbose > pyfunctest.md
-```
-
-## Test coverage
-
-```
----------- coverage: platform linux, python 3.8.10-final-0 -----------
-Name                        Stmts   Miss  Cover
------------------------------------------------
-src/docker.py                 260     64    75%
-src/fmod.py                    26      1    96%
-src/fmod_db.py                 37      6    84%
-src/fmods.py                  157     20    87%
-src/ftp.py                    246     31    87%
-src/git.py                     17      1    94%
-src/http.py                    64     28    56%
-src/httpserver.py              58     12    79%
-src/kafka.py                  171     74    57%
-src/lfs.py                     30     17    43%
-src/migrate.py                 82     23    72%
-src/minio.py                  123     24    80%
-src/mysql.py                   47      3    94%
-src/postgre.py                 44      3    93%
-src/rabbitmq.py               152     42    72%
-src/test/docker_test.py        77      6    92%
-src/test/fmods_test.py         14      1    93%
-src/test/ftp_test.py           43      1    98%
-src/test/git_test.py           14      1    93%
-src/test/http_test.py          23      1    96%
-src/test/kafka_test.py         34      8    76%
-src/test/minio_test.py         41      1    98%
-src/test/mysql_test.py         45      1    98%
-src/test/postgre_test.py       42      1    98%
-src/test/rabbitmq_test.py      42      1    98%
------------------------------------------------
-TOTAL                        1889    371    80%
 ```
 
